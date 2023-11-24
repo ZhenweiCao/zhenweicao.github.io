@@ -8,13 +8,19 @@ subtitle: ''
 description: ''
 keywords:
 author: Zhenwei Cao
-language: en
+# language: en
+language: zh-CN
 timezone: ''
+
+# Search
+search:
+  path: search.xml
+  field: post
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
 url: http://blog.zhenwei.site
-permalink: :year/:month/:day/:title/
+permalink: :title/
 permalink_defaults:
 pretty_urls:
   trailing_index: true # Set to false to remove trailing 'index.html' from permalinks
