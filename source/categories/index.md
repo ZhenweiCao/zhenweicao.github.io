@@ -1,4 +1,6 @@
 ---
+type: "categories"
+layout: "categories"
 title: categories
-date: 2023-11-24 17:24:39
+date: 2023-11-24 00:00:00
 ---

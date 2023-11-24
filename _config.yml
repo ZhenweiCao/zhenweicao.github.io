@@ -112,3 +112,20 @@ deploy:
   type: 'git'
   repo: https://github.com/ZhenweiCao/zhenweicao.github.io.git
   branch: main
+
+githubEmojis:
+  enable: true
+  className: github-emoji
+  inject: true
+  styles:
+  customEmojis:
+
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
+  content:
+  content_limit: 140
+  content_limit_delim: ' '
+  order_by: -date
