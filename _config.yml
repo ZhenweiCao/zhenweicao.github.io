@@ -3,14 +3,14 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
-subtitle: ''
-description: ''
+title: Zhenwei's Blog
+subtitle: 'KNOWLEDGE IS POWER'
+description: 'Get busy living, or get busy dying.'
 keywords:
 author: Zhenwei Cao
 # language: en
 language: zh-CN
-timezone: ''
+timezone: 'Asia/Shanghai'
 
 # Search
 search:
@@ -55,7 +55,7 @@ highlight:
   line_number: true
   auto_detect: false
   tab_replace: ''
-  wrap: true
+  wrap: true  
   hljs: false
 prismjs:
   enable: true
@@ -129,3 +129,7 @@ feed:
   content_limit: 140
   content_limit_delim: ' '
   order_by: -date
+
+permalink_pinyin:
+  enable: true
+  separator: '-' # default: '-'
