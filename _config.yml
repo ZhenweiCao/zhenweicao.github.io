@@ -19,7 +19,7 @@ search:
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://blog.zhenwei.site
+url: https://blog.zhenwei.site
 permalink: :title/
 permalink_defaults:
 pretty_urls:
