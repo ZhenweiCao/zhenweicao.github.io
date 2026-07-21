@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#344b5f"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #1f2a33; }
+      .title { font-size: 28px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #4d5b66; }
+      .label { font-size: 17px; font-weight: 700; }
+      .small { font-size: 14px; fill: #394956; }
+      .tiny { font-size: 12px; fill: #53636f; }
+      .axis { stroke: #53636f; stroke-width: 2; marker-end: url(#arrow); }
+      .bar1 { fill: #e6f0ff; stroke: #3567a8; stroke-width: 1.4; rx: 5; }
+      .bar2 { fill: #e8f5ec; stroke: #3c7b52; stroke-width: 1.4; rx: 5; }
+      .bar3 { fill: #fff3dc; stroke: #a66c1f; stroke-width: 1.4; rx: 5; }
+      .gate { stroke: #9c3f5d; stroke-width: 3; stroke-dasharray: 7 5; }
+      .line { stroke: #344b5f; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .note { fill: #ffffff; stroke: #9aa8b5; stroke-width: 1; rx: 5; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+  <text x="48" y="50" class="title">PDL / GDC：dependent kernels 的提前启动与安全等待</text>
+  <text x="48" y="78" class="subtitle">CUDA 公共机制叫 PDL；CUTLASS/GDC 对应 PTX griddepcontrol.launch_dependents 与 griddepcontrol.wait。</text>
+
+  <line x1="175" y1="150" x2="1160" y2="150" class="axis"/>
+  <text x="1168" y="155" class="tiny">time</text>
+  <text x="70" y="155" class="label">Primary</text>
+  <text x="70" y="310" class="label">Secondary</text>
+
+  <rect x="190" y="118" width="285" height="64" class="bar1"/>
+  <text x="222" y="154" class="small">produce activation / result</text>
+
+  <rect x="475" y="118" width="170" height="64" class="bar3"/>
+  <text x="503" y="146" class="small">trigger</text>
+  <text x="493" y="168" class="tiny">cudaTrigger... / GDC launch</text>
+
+  <rect x="645" y="118" width="275" height="64" class="bar1"/>
+  <text x="697" y="154" class="small">primary tail / epilogue</text>
+
+  <line x1="560" y1="102" x2="560" y2="352" class="gate"/>
+  <text x="575" y="105" class="tiny">launch dependents</text>
+
+  <rect x="565" y="278" width="300" height="64" class="bar2"/>
+  <text x="616" y="314" class="small">independent preamble</text>
+  <text x="622" y="335" class="tiny">e.g. prefetch weights / descriptors</text>
+
+  <rect x="865" y="278" width="150" height="64" class="bar3"/>
+  <text x="892" y="305" class="small">wait</text>
+  <text x="884" y="327" class="tiny">cudaGridDependencySynchronize</text>
+
+  <rect x="1015" y="278" width="155" height="64" class="bar2"/>
+  <text x="1034" y="314" class="small">read primary output</text>
+
+  <path d="M645 182 C710 230, 800 255, 865 278" class="line"/>
+  <text x="705" y="235" class="tiny">memory visibility boundary</text>
+
+  <rect x="90" y="440" width="1080" height="135" class="note"/>
+  <text x="116" y="472" class="small">正确性规则：secondary 可以提前 launch，但读取 primary 写出的 global memory 前必须 wait。提前 launch 不是提前可见。</text>
+  <text x="116" y="500" class="small">性能规则：只有 secondary 有足够 preamble、primary 有 tail，并且资源允许并发时才有收益；CUDA 不保证一定 overlap。</text>
+  <text x="116" y="528" class="small">CUTLASS 规则：构建时打开 CUTLASS_ENABLE_GDC_FOR_SM100 只会编入 GDC 指令；运行时仍要 launch_with_pdl=true。</text>
+</svg>

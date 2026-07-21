@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 760" role="img" aria-labelledby="title desc">
+  <title id="title">Online Softmax 与 Flash Attention 状态更新</title>
+  <desc id="desc">展示 Flash Attention V2 中 Online Softmax 在每个 KV tile 上对三个累加器 m（最大值）、d（分母 sum）、O（输出）做"先重缩放旧值、再加入新项"的在线更新流程。重点强调 m_new 必须先于 d_new、O_new 计算，并用于对旧值的重缩放。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      text {
+        font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        fill: #0f172a;
+      }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .label { font-size: 17px; font-weight: 700; }
+      .small { font-size: 13px; fill: #475569; }
+      .tiny { font-size: 11px; fill: #64748b; }
+      .mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; fill: #0f172a; }
+      .start { fill: #eef6ff; stroke: #2563eb; stroke-width: 1.8; rx: 10; }
+      .metric { fill: #ecfdf5; stroke: #059669; stroke-width: 1.8; rx: 10; }
+      .decision { fill: #fefce8; stroke: #ca8a04; stroke-width: 1.8; rx: 10; }
+      .action { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 1.8; rx: 10; }
+      .tilebox { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.4; rx: 10; }
+      .arrow { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1240" height="760" fill="#f8fafc"/>
+
+  <text x="50" y="50" class="title">Online Softmax 与 Flash Attention 状态更新</text>
+  <text x="50" y="78" class="subtitle">每个 KV tile：先更新 m_new，再用 exp(m_prev − m_new) 重缩放旧 d 与 O，最后加入新项。顺序不可颠倒。</text>
+
+  <!-- Initialization box (left) -->
+  <rect x="40" y="120" width="180" height="430" class="start"/>
+  <text x="60" y="152" class="label">初始化</text>
+  <text x="60" y="178" class="small">迭代前三个累加器</text>
+  <text x="60" y="215" class="mono">m_0 = −∞</text>
+  <text x="60" y="245" class="small">行级 running max</text>
+  <text x="60" y="285" class="mono">d_0 = 0</text>
+  <text x="60" y="315" class="small">softmax 分母 Σ exp</text>
+  <text x="60" y="355" class="mono">O_0 = 0</text>
+  <text x="60" y="385" class="small">加权输出累加器</text>
+  <text x="60" y="445" class="tiny">m 为标量 / 行向量</text>
+  <text x="60" y="463" class="tiny">d 与 m 同形</text>
+  <text x="60" y="481" class="tiny">O ∈ R^(Br × d_head)</text>
+  <text x="60" y="520" class="tiny">Q 已加载到 SMEM，</text>
+  <text x="60" y="538" class="tiny">遍历 KV tile i = 1..N</text>
+
+  <!-- Tile 1 -->
+  <rect x="250" y="120" width="290" height="490" class="tilebox"/>
+  <text x="270" y="150" class="label">Tile 1（i = 1）</text>
+  <text x="270" y="172" class="small">prev: m_0, d_0, O_0</text>
+
+  <rect x="266" y="190" width="258" height="60" class="start"/>
+  <text x="278" y="212" class="small">输入 score 向量</text>
+  <text x="278" y="237" class="mono">x_1 = Q · K_1ᵀ</text>
+
+  <rect x="266" y="270" width="258" height="62" class="metric"/>
+  <text x="278" y="292" class="small">① 先更新 max</text>
+  <text x="278" y="318" class="mono">m_1 = max(m_0, max(x_1))</text>
+
+  <rect x="266" y="352" width="258" height="86" class="metric"/>
+  <text x="278" y="374" class="small">② 重缩放 + 加新项 → d</text>
+  <text x="278" y="399" class="mono">α = exp(m_0 − m_1)</text>
+  <text x="278" y="421" class="mono">d_1 = d_0·α + Σ exp(x_1 − m_1)</text>
+
+  <rect x="266" y="458" width="258" height="86" class="metric"/>
+  <text x="278" y="480" class="small">③ 重缩放 + 加新项 → O</text>
+  <text x="278" y="505" class="mono">p_1 = exp(x_1 − m_1)</text>
+  <text x="278" y="527" class="mono">O_1 = O_0·α + p_1 · V_1</text>
+
+  <text x="270" y="572" class="tiny">m_0 = −∞ ⇒ α = 0，旧值被清零，</text>
+  <text x="270" y="590" class="tiny">d_1 / O_1 退化为 tile 内 local softmax。</text>
+
+  <!-- Tile 2 -->
+  <rect x="570" y="120" width="290" height="490" class="tilebox"/>
+  <text x="590" y="150" class="label">Tile 2（i = 2）</text>
+  <text x="590" y="172" class="small">prev: m_1, d_1, O_1</text>
+
+  <rect x="586" y="190" width="258" height="60" class="start"/>
+  <text x="598" y="212" class="small">输入 score 向量</text>
+  <text x="598" y="237" class="mono">x_2 = Q · K_2ᵀ</text>
+
+  <rect x="586" y="270" width="258" height="62" class="metric"/>
+  <text x="598" y="292" class="small">① 更新 max（可能上调）</text>
+  <text x="598" y="318" class="mono">m_2 = max(m_1, max(x_2))</text>
+
+  <rect x="586" y="352" width="258" height="86" class="metric"/>
+  <text x="598" y="374" class="small">② 用 α 修正旧 d</text>
+  <text x="598" y="399" class="mono">α = exp(m_1 − m_2)   (α ≤ 1)</text>
+  <text x="598" y="421" class="mono">d_2 = d_1·α + Σ exp(x_2 − m_2)</text>
+
+  <rect x="586" y="458" width="258" height="86" class="metric"/>
+  <text x="598" y="480" class="small">③ 用同一 α 修正旧 O</text>
+  <text x="598" y="505" class="mono">p_2 = exp(x_2 − m_2)</text>
+  <text x="598" y="527" class="mono">O_2 = O_1·α + p_2 · V_2</text>
+
+  <text x="590" y="572" class="tiny">若 max(x_2) &gt; m_1，则 m_2 上调，</text>
+  <text x="590" y="590" class="tiny">α &lt; 1 把旧 d / O 整体缩小，保证数值等价。</text>
+
+  <!-- Tile 3 -->
+  <rect x="890" y="120" width="290" height="490" class="tilebox"/>
+  <text x="910" y="150" class="label">Tile 3（i = 3，末轮）</text>
+  <text x="910" y="172" class="small">prev: m_2, d_2, O_2</text>
+
+  <rect x="906" y="190" width="258" height="60" class="start"/>
+  <text x="918" y="212" class="small">输入 score 向量</text>
+  <text x="918" y="237" class="mono">x_3 = Q · K_3ᵀ</text>
+
+  <rect x="906" y="270" width="258" height="62" class="metric"/>
+  <text x="918" y="292" class="small">① m 再次更新</text>
+  <text x="918" y="318" class="mono">m_3 = max(m_2, max(x_3))</text>
+
+  <rect x="906" y="352" width="258" height="86" class="metric"/>
+  <text x="918" y="374" class="small">② d 重缩放 + 加新项</text>
+  <text x="918" y="399" class="mono">α = exp(m_2 − m_3)</text>
+  <text x="918" y="421" class="mono">d_3 = d_2·α + Σ exp(x_3 − m_3)</text>
+
+  <rect x="906" y="458" width="258" height="86" class="metric"/>
+  <text x="918" y="480" class="small">③ O 重缩放 + 加新项</text>
+  <text x="918" y="505" class="mono">p_3 = exp(x_3 − m_3)</text>
+  <text x="918" y="527" class="mono">O_3 = O_2·α + p_3 · V_3</text>
+
+  <text x="910" y="572" class="tiny">迭代结束后进入归一化阶段，</text>
+  <text x="910" y="590" class="tiny">m_final = m_3, d_final = d_3, O_final = O_3。</text>
+
+  <!-- Arrows between tiles and from init -->
+  <path d="M 220 365 L 250 365" class="arrow"/>
+  <path d="M 540 365 L 570 365" class="arrow"/>
+  <path d="M 860 365 L 890 365" class="arrow"/>
+
+  <!-- Final output box (below tiles, right) -->
+  <rect x="640" y="635" width="560" height="100" class="action"/>
+  <text x="660" y="665" class="label">最终输出（归一化）</text>
+  <text x="660" y="690" class="mono">softmax(QKᵀ) · V  =  O_final / d_final  =  O_N / d_N</text>
+  <text x="660" y="715" class="small">迭代过程中 O 是“未归一化”的加权和，最后一步除以 d 还原标准 softmax。</text>
+
+  <path d="M 1035 610 L 1035 635" class="arrow"/>
+
+  <!-- Bottom-left callout -->
+  <rect x="40" y="635" width="570" height="100" class="decision"/>
+  <text x="60" y="665" class="label">⚠ 常见 bug：更新顺序</text>
+  <text x="60" y="690" class="small">m_new 必须 <tspan font-weight="700" fill="#0f172a">先于</tspan> d_new / O_new 计算，并先用 α = exp(m_prev − m_new) 重缩放旧 d、O。</text>
+  <text x="60" y="712" class="small">顺序反了 ⇒ α 用错基准，旧值缩放不一致，softmax 数值错误，</text>
+  <text x="60" y="730" class="small">表现为 loss NaN / 与参考实现误差远超 1e−3。</text>
+</svg>

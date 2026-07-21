@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">Ampere 到 Blackwell 架构与编程范式演进</title>
+  <desc id="desc">对比 Ampere、Hopper、Blackwell 三代 NVIDIA GPU 在硬件能力、编程范式和优化重点上的演进。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      text {
+        font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        fill: #0f172a;
+      }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .arch { font-size: 23px; font-weight: 700; }
+      .label { font-size: 16px; font-weight: 700; }
+      .small { font-size: 13px; fill: #334155; }
+      .tiny { font-size: 11px; fill: #64748b; }
+      .ampere { fill: #eef6ff; stroke: #2563eb; stroke-width: 2; rx: 14; }
+      .hopper { fill: #ecfdf5; stroke: #059669; stroke-width: 2; rx: 14; }
+      .blackwell { fill: #fefce8; stroke: #ca8a04; stroke-width: 2; rx: 14; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 8; }
+      .theme { fill: #f8fafc; stroke: #64748b; stroke-width: 1.2; rx: 8; }
+      .arrow { stroke: #334155; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748b; stroke-width: 1.4; stroke-dasharray: 5 5; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="760" fill="#f8fafc"/>
+  <text x="50" y="58" class="title">Ampere 到 Blackwell：硬件能力与编程范式演进</text>
+  <text x="50" y="86" class="subtitle">读图顺序：数据搬运从线程指令变成专用引擎；MMA 从 warp 走向 warpgroup / CTA group；优化从单 CTA tile 扩展到 cluster、scale 和 persistent scheduling。</text>
+
+  <rect x="55" y="125" width="360" height="520" class="ampere"/>
+  <text x="85" y="162" class="arch">Ampere  SM80 / SM86</text>
+  <text x="85" y="188" class="small">主线：异步 copy + 第三代 Tensor Core</text>
+
+  <rect x="85" y="220" width="300" height="112" class="box"/>
+  <text x="108" y="247" class="label">硬件新增</text>
+  <text x="108" y="275" class="small">第三代 Tensor Core：TF32 / BF16 / FP64 等</text>
+  <text x="108" y="298" class="small">`cp.async`：global → shared 异步拷贝</text>
+  <text x="108" y="321" class="small">split arrive/wait barrier，L2 persistence</text>
+
+  <rect x="85" y="360" width="300" height="106" class="box"/>
+  <text x="108" y="387" class="label">编程范式</text>
+  <text x="108" y="415" class="small">warp 级 `mma.sync` + `ldmatrix`</text>
+  <text x="108" y="438" class="small">CTA 级 shared-memory tiling</text>
+  <text x="108" y="461" class="small">multi-stage software pipeline</text>
+
+  <rect x="85" y="493" width="300" height="112" class="box"/>
+  <text x="108" y="520" class="label">优化重点</text>
+  <text x="108" y="548" class="small">coalesced global load，减少 HBM 重读</text>
+  <text x="108" y="571" class="small">SMEM layout 避免 bank conflict</text>
+  <text x="108" y="594" class="small">调 `num_stages`、寄存器和 occupancy</text>
+
+  <rect x="460" y="125" width="360" height="520" class="hopper"/>
+  <text x="490" y="162" class="arch">Hopper  SM90</text>
+  <text x="490" y="188" class="small">主线：TMA + WGMMA + cluster</text>
+
+  <rect x="490" y="220" width="300" height="112" class="box"/>
+  <text x="513" y="247" class="label">硬件新增</text>
+  <text x="513" y="275" class="small">TMA：1D 到 5D tensor bulk async copy</text>
+  <text x="513" y="298" class="small">WGMMA：warpgroup 异步 MMA</text>
+  <text x="513" y="321" class="small">Thread Block Cluster / DSMEM / mbarrier</text>
+
+  <rect x="490" y="360" width="300" height="106" class="box"/>
+  <text x="513" y="387" class="label">编程范式</text>
+  <text x="513" y="415" class="small">producer warp 发起 TMA</text>
+  <text x="513" y="438" class="small">consumer warpgroup 执行 WGMMA</text>
+  <text x="513" y="461" class="small">cluster 级 tile 与同步进入主路径</text>
+
+  <rect x="490" y="493" width="300" height="112" class="box"/>
+  <text x="513" y="520" class="label">优化重点</text>
+  <text x="513" y="548" class="small">TMA descriptor、mbarrier、pipeline phase</text>
+  <text x="513" y="571" class="small">warp specialization，copy/compute 重叠</text>
+  <text x="513" y="594" class="small">cluster size、DSMEM 访问对齐与 coalescing</text>
+
+  <rect x="865" y="125" width="360" height="520" class="blackwell"/>
+  <text x="895" y="162" class="arch">Blackwell  SM100 / SM120</text>
+  <text x="895" y="188" class="small">主线：tcgen05 + narrow precision + scale</text>
+
+  <rect x="895" y="220" width="300" height="112" class="box"/>
+  <text x="918" y="247" class="label">硬件新增</text>
+  <text x="918" y="275" class="small">SM100 `tcgen05.mma` / CTA group</text>
+  <text x="918" y="298" class="small">FP4 / FP6 / FP8 narrow precision</text>
+  <text x="918" y="321" class="small">block-scaled GEMM、更多 L2 / NVLink 能力</text>
+
+  <rect x="895" y="360" width="300" height="106" class="box"/>
+  <text x="918" y="387" class="label">编程范式</text>
+  <text x="918" y="415" class="small">MMA 绑定 scale tensor / descriptor</text>
+  <text x="918" y="438" class="small">TMA warp-specialized policy 继续强化</text>
+  <text x="918" y="461" class="small">库/DSL 选择比手写 PTX 更重要</text>
+
+  <rect x="895" y="493" width="300" height="112" class="box"/>
+  <text x="918" y="520" class="label">优化重点</text>
+  <text x="918" y="548" class="small">选择 dtype、scale granularity、layout</text>
+  <text x="918" y="571" class="small">满足 narrow precision alignment 要求</text>
+  <text x="918" y="594" class="small">persistent / cooperative / grouped GEMM 调度</text>
+
+  <path d="M 415 385 L 460 385" class="arrow"/>
+  <path d="M 820 385 L 865 385" class="arrow"/>
+  <text x="424" y="365" class="tiny">copy 从线程指令升级到 TMA</text>
+  <text x="827" y="365" class="tiny">MMA 与 scale 体系绑定</text>
+
+  <rect x="130" y="675" width="1020" height="48" class="theme"/>
+  <text x="160" y="704" class="small">一句话：Ampere 优化单 CTA 的异步流水线；Hopper 优化 TMA/WGMMA/cluster 的跨 CTA 流水线；Blackwell 优化 `tcgen05`、低精度 scale、layout 和调度策略。</text>
+</svg>
