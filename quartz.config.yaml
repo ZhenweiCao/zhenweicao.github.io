@@ -14,32 +14,32 @@ configuration:
     - .obsidian
   theme:
     fontOrigin: googleFonts
-    cdnCaching: true
+    cdnCaching: false
     typography:
-      header: Schibsted Grotesk
-      body: Source Sans Pro
-      code: IBM Plex Mono
+      header: Noto Sans SC
+      body: Noto Sans SC
+      code: JetBrains Mono
     colors:
       lightMode:
-        light: "#faf8f8"
-        lightgray: "#e5e5e5"
-        gray: "#b8b8b8"
-        darkgray: "#4e4e4e"
-        dark: "#2b2b2b"
-        secondary: "#284b63"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#fff23688"
+        light: "#f7f9fc"
+        lightgray: "#e4eaf2"
+        gray: "#aab7c8"
+        darkgray: "#3d4a5d"
+        dark: "#14213d"
+        secondary: "#1f5fbf"
+        tertiary: "#0f9d8a"
+        highlight: rgba(31, 95, 191, 0.09)
+        textHighlight: "#fff0ae"
       darkMode:
-        light: "#161618"
-        lightgray: "#393639"
-        gray: "#646464"
-        darkgray: "#d4d4d4"
-        dark: "#ebebec"
-        secondary: "#7b97aa"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#b3aa0288"
+        light: "#101722"
+        lightgray: "#1d2938"
+        gray: "#566579"
+        darkgray: "#d4deeb"
+        dark: "#f5f8fc"
+        secondary: "#7db1ff"
+        tertiary: "#65d2c2"
+        highlight: rgba(125, 177, 255, 0.14)
+        textHighlight: "#5d4a0080"
 plugins:
   - source: github:quartz-community/created-modified-date
     enabled: true
