@@ -1371,9 +1371,7 @@ ncu -o report --set full ./your_gemm_binary
 
 ## 15. 完整优化路径总结
 
-![[GEMM 优化路径栈.svg]]
-
-可编辑源图：[[GEMM 优化路径栈.excalidraw]]
+![CUDA GEMM 优化路径栈](/gpu/drawings/gemm-优化路径栈.svg)
 
 ### 15.1 优化层次图
 

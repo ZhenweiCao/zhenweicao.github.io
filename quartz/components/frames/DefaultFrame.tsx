@@ -1,7 +1,9 @@
 import { PageFrame, PageFrameProps } from "./types"
 import HeaderConstructor from "../Header"
+import SiteHeaderConstructor from "../SiteHeader"
 
 const Header = HeaderConstructor()
+const SiteHeader = SiteHeaderConstructor()
 
 /**
  * The default page frame — three-column layout with left sidebar, center
@@ -23,7 +25,8 @@ export const DefaultFrame: PageFrame = {
   }: PageFrameProps) {
     return (
       <>
-        <div id="quartz-left-sidebar" class="left sidebar">
+        <SiteHeader {...componentData} />
+        <aside id="quartz-left-sidebar" class="left sidebar" aria-label="知识导航">
           {left.length > 0 && (
             <button
               class="left-sidebar-toggle"
@@ -74,8 +77,8 @@ export const DefaultFrame: PageFrame = {
           {left.map((BodyComponent) => (
             <BodyComponent {...componentData} />
           ))}
-        </div>
-        <div class="center">
+        </aside>
+        <main id="quartz-main" class="center" tabindex={-1}>
           <div class="page-header">
             <Header {...componentData}>
               {header.map((HeaderComponent) => (
@@ -95,12 +98,12 @@ export const DefaultFrame: PageFrame = {
               <BodyComponent {...componentData} />
             ))}
           </div>
-        </div>
-        <div class="right sidebar">
+        </main>
+        <aside class="right sidebar" aria-label="页面辅助信息">
           {right.map((BodyComponent) => (
             <BodyComponent {...componentData} />
           ))}
-        </div>
+        </aside>
         <Footer {...componentData} />
       </>
     )

@@ -21,24 +21,24 @@ configuration:
       code: JetBrains Mono
     colors:
       lightMode:
-        light: "#f7f9fc"
-        lightgray: "#e4eaf2"
-        gray: "#aab7c8"
-        darkgray: "#3d4a5d"
-        dark: "#14213d"
-        secondary: "#1f5fbf"
-        tertiary: "#0f9d8a"
-        highlight: rgba(31, 95, 191, 0.09)
+        light: "#ffffff"
+        lightgray: "#e5e7eb"
+        gray: "#667085"
+        darkgray: "#374151"
+        dark: "#111827"
+        secondary: "#2563eb"
+        tertiary: "#1d4ed8"
+        highlight: rgba(37, 99, 235, 0.10)
         textHighlight: "#fff0ae"
       darkMode:
-        light: "#101722"
-        lightgray: "#1d2938"
-        gray: "#566579"
-        darkgray: "#d4deeb"
-        dark: "#f5f8fc"
-        secondary: "#7db1ff"
-        tertiary: "#65d2c2"
-        highlight: rgba(125, 177, 255, 0.14)
+        light: "#111111"
+        lightgray: "#2a2a2a"
+        gray: "#a3a3a3"
+        darkgray: "#d1d5db"
+        dark: "#f1f5f9"
+        secondary: "#60a5fa"
+        tertiary: "#93c5fd"
+        highlight: rgba(96, 165, 250, 0.12)
         textHighlight: "#5d4a0080"
 plugins:
   - source: github:quartz-community/created-modified-date
@@ -72,7 +72,7 @@ plugins:
     order: 50
     layout:
       position: right
-      priority: 30
+      priority: 10
   - source: github:quartz-community/crawl-links
     enabled: true
     options:
@@ -134,6 +134,10 @@ plugins:
     enabled: true
   - source: github:quartz-community/explorer
     enabled: true
+    options:
+      folderDefaultState: open
+      folderClickBehavior: collapse
+      useSavedState: true
     layout:
       position: left
       priority: 50
@@ -170,15 +174,9 @@ plugins:
         maxNodes: 0
     layout:
       position: right
-      priority: 10
+      priority: 40
   - source: github:quartz-community/search
     enabled: true
-    layout:
-      position: left
-      priority: 20
-      group: toolbar
-      groupOptions:
-        grow: true
   - source: github:quartz-community/backlinks
     enabled: true
     layout:
@@ -201,21 +199,10 @@ plugins:
       priority: 30
   - source: github:quartz-community/page-title
     enabled: true
-    layout:
-      position: left
-      priority: 10
   - source: github:quartz-community/darkmode
     enabled: true
-    layout:
-      position: left
-      priority: 30
-      group: toolbar
   - source: github:quartz-community/reader-mode
     enabled: true
-    layout:
-      position: left
-      priority: 35
-      group: toolbar
   - source: github:quartz-community/breadcrumbs
     enabled: true
     layout:
@@ -238,13 +225,9 @@ plugins:
   - source: github:quartz-community/recent-notes
     enabled: false
   - source: github:quartz-community/spacer
-    enabled: true
+    enabled: false
     options: {}
     order: 25
-    layout:
-      position: left
-      priority: 25
-      display: mobile-only
   - source: github:quartz-community/bases-page
     enabled: true
     options: {}
@@ -259,12 +242,13 @@ plugins:
         - aliases
       excludedProperties: []
       hidePropertiesView: false
+      collapsed: true
       delimiters: ---
       language: yaml
     order: 5
     layout:
       position: beforeBody
-      priority: 15
+      priority: 30
       display: all
   - source: github:quartz-community/unlisted-pages
     enabled: true
@@ -289,11 +273,6 @@ plugins:
       priority: 50
       display: all
 layout:
-  groups:
-    toolbar:
-      priority: 35
-      direction: row
-      gap: 0.5rem
   byPageType:
     "404":
       positions:

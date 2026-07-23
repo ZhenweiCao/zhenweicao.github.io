@@ -8,6 +8,8 @@ import spaRouterScript from "../../components/scripts/spa.inline"
 import popoverScript from "../../components/scripts/popover.inline"
 // @ts-ignore
 import sidebarControlsScript from "../../components/scripts/sidebarControls.inline"
+// @ts-ignore
+import siteHeaderScript from "../../components/scripts/siteHeader.inline"
 import baseStyles from "../../styles/base.scss"
 import customStyles from "../../styles/custom.scss"
 import popoverStyle from "../../components/styles/popover.scss"
@@ -261,6 +263,7 @@ function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentReso
   }
 
   componentResources.afterDOMLoaded.push(sidebarControlsScript)
+  componentResources.afterDOMLoaded.push(siteHeaderScript)
 
   if (cfg.enableSPA) {
     componentResources.afterDOMLoaded.push(spaRouterScript)

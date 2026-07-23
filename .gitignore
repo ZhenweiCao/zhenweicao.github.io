@@ -10,4 +10,5 @@ private/
 .replit
 replit.nix
 .quartz/
+output/playwright/
 quartz/cli/tui/dist/
