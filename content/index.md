@@ -25,34 +25,36 @@ description: 面向 GPU 系统、CUDA Kernel 与性能工程的公开技术笔�
     </div>
   </section>
 
+<!-- quartz-home-featured:start -->
   <section class="home-section" aria-labelledby="topics-title">
     <div class="home-section-heading">
       <h2 id="topics-title">从核心专题进入</h2>
       <p>沿着硬件、编程、优化、分析四条主线阅读；每个入口都连接到可持续维护的 canonical note。</p>
     </div>
     <div class="home-topic-grid">
-      <a class="home-topic-card" href="/gpu/hardware/gpu-硬件背景地图">
+      <a class="home-topic-card" href="/gpu/hardware/gpu-硬件背景地图" data-feature-id="gpu-architecture">
         <span>01 · ARCHITECTURE</span>
         <strong>GPU 硬件与架构</strong>
         <small>理解 SM、warp、内存层级，以及 Ampere、Hopper、Blackwell 的执行路径演进。</small>
       </a>
-      <a class="home-topic-card" href="/gpu/cuda/cuda-编程基础">
+      <a class="home-topic-card" href="/gpu/cuda/cuda-编程基础" data-feature-id="cuda-foundations">
         <span>02 · CUDA</span>
         <strong>CUDA 编程基础</strong>
         <small>从 grid、block、thread 到 shared memory，建立可运行、可调试的 Kernel 基础。</small>
       </a>
-      <a class="home-topic-card" href="/gpu/cuda/cuda-gemm-矩阵乘法优化指南">
+      <a class="home-topic-card" href="/gpu/cuda/cuda-gemm-矩阵乘法优化指南" data-feature-id="kernel-gemm">
         <span>03 · KERNEL</span>
         <strong>Kernel 与 GEMM 优化</strong>
         <small>从 naive 实现走向 Tensor Core、TMA、TMEM 与现代流水线调度。</small>
       </a>
-      <a class="home-topic-card" href="/gpu/profiling/cuda-kernel-性能瓶颈定位流程">
+      <a class="home-topic-card" href="/gpu/profiling/cuda-kernel-性能瓶颈定位流程" data-feature-id="performance-profiling">
         <span>04 · PROFILING</span>
         <strong>性能分析与证据链</strong>
         <small>用 Nsight Compute、trace 与实验对照定位瓶颈，并验证优化收益。</small>
       </a>
     </div>
   </section>
+<!-- quartz-home-featured:end -->
 
   <section class="home-section" aria-labelledby="reading-title">
     <div class="home-section-heading">

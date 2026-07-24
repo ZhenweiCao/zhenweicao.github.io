@@ -1,0 +1,102 @@
+{
+  "schema_version": 2,
+  "source_digest": "ad6b02644a358ce55ae762d96757b5f5527a673f3ab21de1dd11946431fe7dbe",
+  "brand": {
+    "label": "Zhenwei",
+    "href": "/"
+  },
+  "navigation": [
+    {
+      "id": "knowledge",
+      "label": "知识库",
+      "href": "/gpu/",
+      "order": 10,
+      "kind": "dropdown",
+      "sidebar": "section-tree",
+      "label_en": "Knowledge",
+      "children": [
+        {
+          "id": "gpu",
+          "label": "GPU 与 CUDA",
+          "href": "/gpu/",
+          "order": 10,
+          "kind": "link",
+          "sidebar": "none"
+        }
+      ]
+    },
+    {
+      "id": "explore",
+      "label": "探索",
+      "href": "/tags/",
+      "order": 40,
+      "kind": "dropdown",
+      "sidebar": "none",
+      "label_en": "Explore",
+      "children": [
+        {
+          "id": "tags",
+          "label": "标签",
+          "href": "/tags/",
+          "order": 0,
+          "kind": "link",
+          "sidebar": "none"
+        }
+      ]
+    }
+  ],
+  "homepage": {
+    "featured": {
+      "title": "从核心专题进入",
+      "description": "沿着硬件、编程、优化、分析四条主线阅读；每个入口都连接到可持续维护的 canonical note。",
+      "items": [
+        {
+          "id": "gpu-architecture",
+          "title": "GPU 硬件与架构",
+          "description": "理解 SM、warp、内存层级，以及 Ampere、Hopper、Blackwell 的执行路径演进。",
+          "href": "/gpu/hardware/gpu-硬件背景地图",
+          "icon": "ARCHITECTURE",
+          "order": 10,
+          "enabled": true
+        },
+        {
+          "id": "cuda-foundations",
+          "title": "CUDA 编程基础",
+          "description": "从 grid、block、thread 到 shared memory，建立可运行、可调试的 Kernel 基础。",
+          "href": "/gpu/cuda/cuda-编程基础",
+          "icon": "CUDA",
+          "order": 20,
+          "enabled": true
+        },
+        {
+          "id": "kernel-gemm",
+          "title": "Kernel 与 GEMM 优化",
+          "description": "从 naive 实现走向 Tensor Core、TMA、TMEM 与现代流水线调度。",
+          "href": "/gpu/cuda/cuda-gemm-矩阵乘法优化指南",
+          "icon": "KERNEL",
+          "order": 30,
+          "enabled": true
+        },
+        {
+          "id": "performance-profiling",
+          "title": "性能分析与证据链",
+          "description": "用 Nsight Compute、trace 与实验对照定位瓶颈，并验证优化收益。",
+          "href": "/gpu/profiling/cuda-kernel-性能瓶颈定位流程",
+          "icon": "PROFILING",
+          "order": 40,
+          "enabled": true
+        }
+      ]
+    }
+  },
+  "utilities": {
+    "search": true,
+    "reader_mode": true,
+    "color_scheme": true
+  },
+  "visibility": {
+    "require_publish": true,
+    "hide_unlisted_from_navigation": true,
+    "hide_empty_sections": true
+  }
+}
