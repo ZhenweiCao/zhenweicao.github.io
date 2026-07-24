@@ -750,6 +750,18 @@ body:not([data-slug="index"]) .page[data-frame="default"] .center > article a.in
   font-size: 0.8rem;
 }
 
+// Tag pages already provide the active tag as page context. Repeating every
+// document's full tag list adds noise, so keep these listings to date + title.
+body[data-slug^="tags/"] .page-listing {
+  .section {
+    grid-template-columns: fit-content(8em) minmax(0, 1fr);
+  }
+
+  .section > .tags {
+    display: none;
+  }
+}
+
 // ============================================================================
 // Collapsed and reader modes
 // ============================================================================
