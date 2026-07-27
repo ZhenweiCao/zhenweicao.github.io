@@ -1,6 +1,9 @@
 import { readFile, rename, unlink, writeFile } from "node:fs/promises"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import { createVaultAssetIndex, resolveVaultAsset } from "../util/cosAssetPublisher"
+import { createConfiguredAssetPublisher } from "../util/configuredAssetPublisher"
+import { loadRepositoryEnvironment } from "../util/localEnvironment"
 import { parseObsidianHomepage, renderHomepage } from "../util/obsidianHomepage"
 import {
   parseObsidianSiteConfiguration,
@@ -9,6 +12,7 @@ import {
 
 type CliOptions = {
   check: boolean
+  uploadAssets: boolean
   vaultRoot: string
 }
 
@@ -16,16 +20,18 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
 const publishingConfigPath = join("VaultMeta", "Publishing", "README.md")
 
 function usage(): string {
-  return `Usage: npm run sync:obsidian-config -- --vault <vault-path> [--check]
+  return `Usage: npm run sync:obsidian-config -- --vault <vault-path> [--check] [--upload-assets]
 
 Options:
   --vault <path>  Obsidian vault root (or set OBSIDIAN_VAULT_ROOT)
   --check         Check for configuration drift without writing
+  --upload-assets Upload a configured homepage image to Tencent COS
   --help          Show this message`
 }
 
 function parseArguments(argv: string[]): CliOptions | null {
   let check = false
+  let uploadAssets = false
   let vaultRoot: string | undefined
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -33,6 +39,10 @@ function parseArguments(argv: string[]): CliOptions | null {
     if (argument === "--help") return null
     if (argument === "--check") {
       check = true
+      continue
+    }
+    if (argument === "--upload-assets") {
+      uploadAssets = true
       continue
     }
     if (argument === "--vault") {
@@ -54,7 +64,11 @@ function parseArguments(argv: string[]): CliOptions | null {
     throw new Error("Pass --vault <path> or set OBSIDIAN_VAULT_ROOT")
   }
 
-  return { check, vaultRoot: resolve(vaultRoot) }
+  if (check && uploadAssets) {
+    throw new Error("--check and --upload-assets cannot be used together")
+  }
+
+  return { check, uploadAssets, vaultRoot: resolve(vaultRoot) }
 }
 
 async function atomicWrite(path: string, contents: string): Promise<void> {
@@ -86,13 +100,27 @@ async function main(): Promise<void> {
   const siteResult = syncSiteConfigurationToQuartz(quartzConfig, siteConfiguration)
   const homepageSourcePath = join(options.vaultRoot, siteConfiguration.homepage.source)
   const homepage = parseObsidianHomepage(await readFile(homepageSourcePath, "utf8"))
+  let heroImageUrl: string | undefined
+
   if (homepage.hero.image !== undefined) {
-    throw new Error(
-      "Homepage local images require the Tencent COS asset publishing feature",
+    const assets = siteConfiguration.assets
+    if (assets === undefined) {
+      throw new Error("website.assets is required when the homepage uses a local image")
+    }
+    const publisher = createConfiguredAssetPublisher(siteConfiguration, options.uploadAssets)
+    const index = await createVaultAssetIndex(options.vaultRoot)
+    const imagePath = resolveVaultAsset(
+      index,
+      siteConfiguration.homepage.source,
+      homepage.hero.image,
     )
+    if (imagePath === undefined) {
+      throw new Error(`Homepage image is not a supported local asset: ${homepage.hero.image}`)
+    }
+    heroImageUrl = (await publisher.publish(imagePath)).url
   }
 
-  const homepageOutput = renderHomepage(homepage)
+  const homepageOutput = renderHomepage(homepage, heroImageUrl)
   const homepageTargetPath = join(repositoryRoot, "content", "index.md")
   const currentHomepage = await readFile(homepageTargetPath, "utf8")
   const homepageChanged = currentHomepage !== homepageOutput
@@ -113,6 +141,7 @@ async function main(): Promise<void> {
   console.log(`Synced website configuration and homepage from ${options.vaultRoot}`)
 }
 
+loadRepositoryEnvironment(repositoryRoot)
 main().catch((error: unknown) => {
   console.error(error instanceof Error ? error.message : error)
   console.error(usage())

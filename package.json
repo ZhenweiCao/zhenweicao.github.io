@@ -18,6 +18,7 @@
     "format": "npx prettier . --write",
     "test": "tsx --test",
     "sync:obsidian-config": "tsx quartz/cli/syncObsidianConfig.ts",
+    "publish:obsidian-assets": "tsx quartz/cli/publishObsidianAssets.ts",
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
     "install-plugins": "./quartz/bootstrap-cli.mjs plugin install --from-config --concurrency 1",
     "prebuild": "npm run install-plugins"
@@ -45,6 +46,7 @@
     "ansi-truncate": "^1.4.0",
     "async-mutex": "^0.5.0",
     "chokidar": "^5.0.0",
+    "cos-nodejs-sdk-v5": "^3.0.0",
     "esbuild-sass-plugin": "^3.6.0",
     "github-slugger": "^2.0.0",
     "globby": "^16.1.0",
