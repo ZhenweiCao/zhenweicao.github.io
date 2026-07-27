@@ -36,16 +36,55 @@ const SiteHeader: QuartzComponent = (props: QuartzComponentProps) => {
           </a>
 
           <nav class="site-nav" aria-label="主导航">
-            {navItems.map((item) => (
-              <a
-                key={`${item.label}-${item.href}`}
-                class={item.isActive ? "is-active" : undefined}
-                href={item.href}
-                aria-current={item.isActive ? "page" : undefined}
-              >
-                {item.label}
-              </a>
-            ))}
+            {navItems.map((item, index) =>
+              item.items && item.items.length > 0 ? (
+                <details
+                  key={`${item.label}-${index}`}
+                  class={`site-nav-dropdown${item.isActive ? " is-active" : ""}`}
+                >
+                  <summary class="site-nav-trigger">
+                    <span>{item.label}</span>
+                    <svg
+                      class="site-nav-caret"
+                      viewBox="0 0 16 16"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m4 6 4 4 4-4" />
+                    </svg>
+                  </summary>
+                  <div class="site-nav-menu">
+                    <div class="site-nav-menu-inner">
+                      {item.items.map((child) => (
+                        <a
+                          key={`${child.label}-${child.href}`}
+                          class={child.isActive ? "is-active" : undefined}
+                          href={child.href}
+                          aria-current={child.isActive ? "page" : undefined}
+                        >
+                          {child.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </details>
+              ) : item.href ? (
+                <a
+                  key={`${item.label}-${item.href}`}
+                  class={`site-nav-link${item.isActive ? " is-active" : ""}`}
+                  href={item.href}
+                  aria-current={item.isActive ? "page" : undefined}
+                >
+                  {item.label}
+                </a>
+              ) : null,
+            )}
           </nav>
 
           <div class="site-actions">

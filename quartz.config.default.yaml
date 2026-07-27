@@ -27,9 +27,14 @@ configuration:
         # Obsidian directory controls the active state; href can target a custom index note.
         directory: GPU
         href: /gpu/gpu-知识库索引
-      - label: 系统课程
-        directory: GPU/GPU-Kernel-Learning
-        href: /gpu/gpu-kernel-learning/readme
+      - label: Tutorial
+        items:
+          - label: GPU Kernel Learning
+            directory: GPU/GPU-Kernel-Learning
+            href: /gpu/gpu-kernel-learning/readme
+          - label: Modern GPU Programming for MLSys
+            directory: GPU/modern-gpu-programming-for-mlsys
+            href: /gpu/modern-gpu-programming-for-mlsys/readme
       - label: 标签
         href: /tags/
   theme:

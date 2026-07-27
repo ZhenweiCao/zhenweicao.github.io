@@ -1,11 +1,19 @@
-import type { NavigationConfiguration, PinnedNavigationItem } from "../cfg"
+import type { NavigationConfiguration, NavigationLink } from "../cfg"
 import { slugTag } from "../util/path"
 
-export type ResolvedNavigationItem = {
+export type ResolvedNavigationLink = {
   label: string
   href: string
   matchPrefix: string
   isActive: boolean
+}
+
+export type ResolvedNavigationItem = {
+  label: string
+  href?: string
+  matchPrefix?: string
+  isActive: boolean
+  items?: ResolvedNavigationLink[]
 }
 
 export const DEFAULT_NAVIGATION: NavigationConfiguration = {
@@ -18,9 +26,19 @@ export const DEFAULT_NAVIGATION: NavigationConfiguration = {
       href: "/gpu/gpu-知识库索引",
     },
     {
-      label: "系统课程",
-      directory: "GPU/GPU-Kernel-Learning",
-      href: "/gpu/gpu-kernel-learning/readme",
+      label: "Tutorial",
+      items: [
+        {
+          label: "GPU Kernel Learning",
+          directory: "GPU/GPU-Kernel-Learning",
+          href: "/gpu/gpu-kernel-learning/readme",
+        },
+        {
+          label: "Modern GPU Programming for MLSys",
+          directory: "GPU/modern-gpu-programming-for-mlsys",
+          href: "/gpu/modern-gpu-programming-for-mlsys/readme",
+        },
+      ],
     },
     { label: "标签", href: "/tags/" },
   ],
@@ -49,7 +67,7 @@ function hrefToMatchPrefix(href: string): string {
   return withoutSlashes || "index"
 }
 
-function resolveItem(item: PinnedNavigationItem): Omit<ResolvedNavigationItem, "isActive"> | null {
+function resolveLink(item: NavigationLink): Omit<ResolvedNavigationLink, "isActive"> | null {
   const label = item.label.trim()
   const directory = item.directory ? normalizeNavigationDirectory(item.directory) : ""
   const href = item.href?.trim()
@@ -78,28 +96,69 @@ export function resolveNavigationItems(
 ): ResolvedNavigationItem[] {
   const config = navigation ?? DEFAULT_NAVIGATION
   const resolvedItems = config.pinnedItems.flatMap((item) => {
-    const resolved = resolveItem(item)
-    return resolved ? [resolved] : []
+    const label = item.label.trim()
+    const resolved = resolveLink(item)
+    const childItems = (item.items ?? []).flatMap((child) => {
+      const childLink = resolveLink(child)
+      return childLink ? [{ ...childLink, isActive: false }] : []
+    })
+
+    if (!label || (resolved === null && childItems.length === 0)) return []
+
+    return [
+      {
+        label,
+        ...(resolved === null
+          ? {}
+          : {
+              href: resolved.href,
+              matchPrefix: resolved.matchPrefix,
+            }),
+        ...(childItems.length === 0 ? {} : { items: childItems }),
+        isActive: false,
+      },
+    ]
   })
   const configuredLimit = config.pinnedLimit ?? resolvedItems.length
   const limit = Math.max(0, Math.floor(configuredLimit))
   const visibleItems = resolvedItems.slice(0, limit)
 
   let activeIndex = -1
+  let activeChildIndex = -1
   let activeSpecificity = -1
 
   visibleItems.forEach((item, index) => {
-    if (!matchesSlug(currentSlug, item.matchPrefix)) return
-
-    const specificity = item.matchPrefix.split("/").length
-    if (specificity > activeSpecificity) {
-      activeIndex = index
-      activeSpecificity = specificity
+    if (item.matchPrefix !== undefined && matchesSlug(currentSlug, item.matchPrefix)) {
+      const specificity = item.matchPrefix.split("/").length
+      if (specificity > activeSpecificity) {
+        activeIndex = index
+        activeChildIndex = -1
+        activeSpecificity = specificity
+      }
     }
+
+    item.items?.forEach((child, childIndex) => {
+      if (!matchesSlug(currentSlug, child.matchPrefix)) return
+
+      const specificity = child.matchPrefix.split("/").length
+      if (specificity > activeSpecificity) {
+        activeIndex = index
+        activeChildIndex = childIndex
+        activeSpecificity = specificity
+      }
+    })
   })
 
   return visibleItems.map((item, index) => ({
     ...item,
     isActive: index === activeIndex,
+    ...(item.items === undefined
+      ? {}
+      : {
+          items: item.items.map((child, childIndex) => ({
+            ...child,
+            isActive: index === activeIndex && childIndex === activeChildIndex,
+          })),
+        }),
   }))
 }

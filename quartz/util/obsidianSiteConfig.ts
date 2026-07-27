@@ -1,6 +1,11 @@
 import { isDeepStrictEqual } from "node:util"
 import { parse, parseDocument } from "yaml"
-import type { NavigationConfiguration, PinnedNavigationItem, SiteHeaderConfiguration } from "../cfg"
+import type {
+  NavigationConfiguration,
+  NavigationLink,
+  PinnedNavigationItem,
+  SiteHeaderConfiguration,
+} from "../cfg"
 
 const SITE_CONFIGURATION_PATTERN =
   /<!--\s*quartz-site-config\s*-->\s*```(?:yaml|yml)\s*\r?\n([\s\S]*?)\r?\n```/g
@@ -76,8 +81,7 @@ function validateExternalUrl(value: unknown, location: string): string | undefin
   return url
 }
 
-function parseNavigationItem(value: unknown, index: number): PinnedNavigationItem {
-  const location = `website.navigation.items[${index}]`
+function parseNavigationLink(value: unknown, location: string): NavigationLink {
   const item = asRecord(value, location)
   assertKnownKeys(item, ["label", "directory", "href"], location)
 
@@ -93,6 +97,34 @@ function parseNavigationItem(value: unknown, index: number): PinnedNavigationIte
     label,
     ...(directory === undefined ? {} : { directory }),
     ...(href === undefined ? {} : { href }),
+  }
+}
+
+function parseNavigationItem(value: unknown, index: number): PinnedNavigationItem {
+  const location = `website.navigation.items[${index}]`
+  const item = asRecord(value, location)
+  assertKnownKeys(item, ["label", "directory", "href", "items"], location)
+
+  const label = requiredString(item.label, `${location}.label`)
+  const directory = validateDirectory(item.directory, `${location}.directory`)
+  const href = validateHref(item.href, `${location}.href`)
+  let items: NavigationLink[] = []
+  if (item.items !== undefined) {
+    if (!Array.isArray(item.items)) throw new Error(`${location}.items must be a sequence`)
+    items = item.items.map((child, childIndex) =>
+      parseNavigationLink(child, `${location}.items[${childIndex}]`),
+    )
+  }
+
+  if (directory === undefined && href === undefined && items.length === 0) {
+    throw new Error(`${location} must define at least one of directory, href, or items`)
+  }
+
+  return {
+    label,
+    ...(directory === undefined ? {} : { directory }),
+    ...(href === undefined ? {} : { href }),
+    ...(items.length === 0 ? {} : { items }),
   }
 }
 

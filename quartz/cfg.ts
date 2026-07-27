@@ -56,7 +56,7 @@ export type Analytics =
       host?: string
     }
 
-export interface PinnedNavigationItem {
+export interface NavigationLink {
   /** Text shown in the site header. */
   label: string
   /**
@@ -66,6 +66,11 @@ export interface PinnedNavigationItem {
   directory?: string
   /** Optional site-root-relative target that overrides the directory landing page. */
   href?: string
+}
+
+export interface PinnedNavigationItem extends NavigationLink {
+  /** Optional links shown in a dropdown below this top-level item. */
+  items?: NavigationLink[]
 }
 
 export interface NavigationConfiguration {

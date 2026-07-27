@@ -54,17 +54,61 @@ describe("site navigation", () => {
       pinnedItems: [
         { label: "知识库", directory: "GPU", href: "/gpu/gpu-知识库索引" },
         {
-          label: "系统课程",
-          directory: "GPU/GPU-Kernel-Learning",
-          href: "/gpu/gpu-kernel-learning/readme",
+          label: "Tutorial",
+          items: [
+            {
+              label: "GPU Kernel Learning",
+              directory: "GPU/GPU-Kernel-Learning",
+              href: "/gpu/gpu-kernel-learning/readme",
+            },
+            {
+              label: "Modern GPU Programming for MLSys",
+              directory: "GPU/modern-gpu-programming-for-mlsys",
+              href: "/gpu/modern-gpu-programming-for-mlsys/readme",
+            },
+          ],
         },
       ],
     }
 
-    const items = resolveNavigationItems(config, "gpu/gpu-kernel-learning/chapter-1")
+    const items = resolveNavigationItems(config, "gpu/modern-gpu-programming-for-mlsys/part-1-gpu")
 
     assert.equal(items[0].isActive, false)
     assert.equal(items[1].isActive, true)
+    assert.equal(items[1].items?.[0].isActive, false)
+    assert.equal(items[1].items?.[1].isActive, true)
+  })
+
+  test("resolves a dropdown whose parent is only a menu label", () => {
+    const config: NavigationConfiguration = {
+      pinnedItems: [
+        {
+          label: "Tutorial",
+          items: [
+            {
+              label: "GPU Kernel Learning",
+              directory: "GPU/GPU-Kernel-Learning",
+              href: "/gpu/gpu-kernel-learning/readme",
+            },
+          ],
+        },
+      ],
+    }
+
+    assert.deepEqual(resolveNavigationItems(config, "gpu/gpu-kernel-learning/readme"), [
+      {
+        label: "Tutorial",
+        isActive: true,
+        items: [
+          {
+            label: "GPU Kernel Learning",
+            href: "/gpu/gpu-kernel-learning/readme",
+            matchPrefix: "gpu/gpu-kernel-learning",
+            isActive: true,
+          },
+        ],
+      },
+    ])
   })
 
   test("supports hiding all pinned items", () => {

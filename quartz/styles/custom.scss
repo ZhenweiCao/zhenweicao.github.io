@@ -163,14 +163,110 @@ a {
   align-items: center;
   gap: 0.25rem;
   margin-left: 0.75rem;
+}
 
-  a {
-    padding: 0.45rem 0.65rem;
+.site-nav-link,
+.site-nav-trigger {
+  box-sizing: border-box;
+  padding: 0.45rem 0.65rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--gray);
+  cursor: pointer;
+  font-family: var(--titleFont);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+
+  &:hover {
+    background: var(--surface-muted);
+    color: var(--dark);
+  }
+}
+
+.site-nav-link.is-active,
+.site-nav-dropdown.is-active > .site-nav-trigger {
+  color: var(--dark);
+  font-weight: 650;
+}
+
+.site-nav-dropdown {
+  position: relative;
+
+  > summary {
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  &[open] > .site-nav-trigger,
+  &:hover > .site-nav-trigger,
+  &:focus-within > .site-nav-trigger {
+    background: var(--surface-muted);
+    color: var(--dark);
+  }
+
+  &[open] .site-nav-caret {
+    transform: rotate(180deg);
+  }
+
+  &[open] > .site-nav-menu,
+  &:hover > .site-nav-menu,
+  &:focus-within > .site-nav-menu {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+}
+
+.site-nav-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.site-nav-caret {
+  flex: 0 0 auto;
+  transition: transform 140ms ease;
+}
+
+.site-nav-menu {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% - 0.1rem);
+  left: 0;
+  min-width: 18rem;
+  padding-top: 0.5rem;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.3rem);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    visibility 120ms ease;
+}
+
+.site-nav-menu-inner {
+  padding: 0.4rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.65rem;
+  background: var(--light);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 12%);
+
+  > a {
+    display: block;
+    padding: 0.55rem 0.7rem;
     border-radius: 0.45rem;
     background: transparent;
     color: var(--gray);
-    font-size: 0.875rem;
+    font-size: 0.84rem;
     font-weight: 500;
+    white-space: nowrap;
 
     &:hover {
       background: var(--surface-muted);
@@ -178,7 +274,8 @@ a {
     }
 
     &.is-active {
-      color: var(--dark);
+      background: color-mix(in srgb, var(--secondary) 10%, transparent);
+      color: var(--secondary);
       font-weight: 650;
     }
   }
@@ -1320,7 +1417,7 @@ a.home-reading-item {
 }
 
 @media (max-width: 1040px) {
-  .site-nav a:nth-child(n + 3) {
+  .site-nav > :nth-child(n + 4) {
     display: none;
   }
 }

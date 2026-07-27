@@ -20,7 +20,7 @@ website:
     github_url: https://github.com/ZhenweiCao
     github_label: 在 GitHub 查看 Zhenwei Cao
   homepage:
-    source: Website/首页.md
+    source: VaultMeta/Publishing/Homepage.md
   assets:
     provider: tencent_cos
     object_prefix: zhenwei-site/assets
@@ -32,6 +32,10 @@ website:
       - label: 知识库
         directory: GPU
         href: /gpu/index
+        items:
+          - label: Modern GPU Programming for MLSys
+            directory: GPU/modern-gpu-programming-for-mlsys
+            href: /gpu/modern-gpu-programming-for-mlsys/readme
 \`\`\`
 `
 
@@ -47,7 +51,7 @@ describe("Obsidian site configuration", () => {
         githubLabel: "在 GitHub 查看 Zhenwei Cao",
       },
       homepage: {
-        source: "Website/首页.md",
+        source: "VaultMeta/Publishing/Homepage.md",
       },
       assets: {
         provider: "tencent_cos",
@@ -57,7 +61,18 @@ describe("Obsidian site configuration", () => {
         pinnedLimit: 2,
         pinnedItems: [
           { label: "首页", href: "/" },
-          { label: "知识库", directory: "GPU", href: "/gpu/index" },
+          {
+            label: "知识库",
+            directory: "GPU",
+            href: "/gpu/index",
+            items: [
+              {
+                label: "Modern GPU Programming for MLSys",
+                directory: "GPU/modern-gpu-programming-for-mlsys",
+                href: "/gpu/modern-gpu-programming-for-mlsys/readme",
+              },
+            ],
+          },
         ],
       },
     })
@@ -77,7 +92,7 @@ website:
     mark: T
     home_label: Test 首页
   homepage:
-    source: Website/首页.md
+    source: VaultMeta/Publishing/Homepage.md
   navigation:
     pinned_limit: 1
     items:
@@ -87,7 +102,7 @@ website:
 
     assert.throws(
       () => parseObsidianSiteConfiguration(invalid),
-      /must define at least one of directory or href/,
+      /must define at least one of directory, href, or items/,
     )
   })
 
@@ -105,7 +120,7 @@ website:
     mark: T
     home_label: Test 首页
   homepage:
-    source: Website/首页.md
+    source: VaultMeta/Publishing/Homepage.md
   navigation:
     pinned_limit: 1
     items:
@@ -188,6 +203,10 @@ plugins: []
       - label: 知识库
         directory: GPU
         href: /gpu/index
+        items:
+          - label: Modern GPU Programming for MLSys
+            directory: GPU/modern-gpu-programming-for-mlsys
+            href: /gpu/modern-gpu-programming-for-mlsys/readme
 `
 
     assert.deepEqual(

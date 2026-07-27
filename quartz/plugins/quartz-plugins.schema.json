@@ -227,6 +227,9 @@
                   },
                   {
                     "required": ["href"]
+                  },
+                  {
+                    "required": ["items"]
                   }
                 ],
                 "properties": {
@@ -244,6 +247,41 @@
                     "type": "string",
                     "pattern": "^/",
                     "description": "Optional site-root-relative target that overrides the directory landing page"
+                  },
+                  "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "Links shown in a dropdown below this top-level item",
+                    "items": {
+                      "type": "object",
+                      "required": ["label"],
+                      "additionalProperties": false,
+                      "anyOf": [
+                        {
+                          "required": ["directory"]
+                        },
+                        {
+                          "required": ["href"]
+                        }
+                      ],
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Text shown in the dropdown"
+                        },
+                        "directory": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Obsidian directory used for the default target and active-state matching"
+                        },
+                        "href": {
+                          "type": "string",
+                          "pattern": "^/",
+                          "description": "Optional site-root-relative target that overrides the directory landing page"
+                        }
+                      }
+                    }
                   }
                 }
               }
