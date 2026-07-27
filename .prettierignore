@@ -2,6 +2,7 @@ public
 node_modules
 .quartz-cache
 plugins/*/dist
+output/playwright/
 
 # Preserve content mirrored from Obsidian and other upstream sources verbatim.
 content/Attachment
