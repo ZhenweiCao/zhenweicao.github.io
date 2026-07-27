@@ -7,11 +7,29 @@ configuration:
   analytics:
     provider: null
   locale: zh-CN
-  baseUrl: blog.zhenwei.site
+  baseUrl: zhenwei.site
   ignorePatterns:
     - private
     - templates
     - .obsidian
+  siteHeader:
+    mark: Z
+    homeLabel: Zhenwei's Blog 首页
+    githubUrl: https://github.com/ZhenweiCao
+    githubLabel: 在 GitHub 查看 Zhenwei Cao
+  navigation:
+    pinnedLimit: 4
+    pinnedItems:
+      - label: 首页
+        href: /
+      - label: 知识库
+        directory: GPU
+        href: /gpu/gpu-知识库索引
+      - label: 系统课程
+        directory: GPU/GPU-Kernel-Learning
+        href: /gpu/gpu-kernel-learning/readme
+      - label: 标签
+        href: /tags/
   theme:
     fontOrigin: local
     cdnCaching: false
@@ -103,9 +121,12 @@ plugins:
     options:
       fontOrigin: local
       useThemeFonts: false
-      title: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif'
-      header: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif'
-      body: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif'
+      title: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui,
+        sans-serif'
+      header: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui,
+        sans-serif'
+      body: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui,
+        sans-serif'
       code: '"SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace'
   - source: github:quartz-community/remove-draft
     enabled: true

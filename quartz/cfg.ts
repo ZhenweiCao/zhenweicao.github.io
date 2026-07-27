@@ -56,6 +56,35 @@ export type Analytics =
       host?: string
     }
 
+export interface PinnedNavigationItem {
+  /** Text shown in the site header. */
+  label: string
+  /**
+   * Obsidian directory relative to the vault/content root.
+   * Used as the default target and to determine the active navigation item.
+   */
+  directory?: string
+  /** Optional site-root-relative target that overrides the directory landing page. */
+  href?: string
+}
+
+export interface NavigationConfiguration {
+  /** Maximum number of pinned items to display, in configured order. */
+  pinnedLimit?: number
+  pinnedItems: PinnedNavigationItem[]
+}
+
+export interface SiteHeaderConfiguration {
+  /** Short mark shown next to the site title. */
+  mark: string
+  /** Accessible label for the link back to the homepage. */
+  homeLabel: string
+  /** Optional external GitHub profile or repository link. */
+  githubUrl?: string
+  /** Accessible label for the GitHub link. */
+  githubLabel?: string
+}
+
 export interface GlobalConfiguration {
   pageTitle: string
   pageTitleSuffix?: string
@@ -67,6 +96,10 @@ export interface GlobalConfiguration {
   analytics: Analytics
   /** Glob patterns to not search */
   ignorePatterns: string[]
+  /** Site identity and external link displayed in the shared header. */
+  siteHeader?: SiteHeaderConfiguration
+  /** Pinned site-header links mapped to Obsidian directories. */
+  navigation?: NavigationConfiguration
   /** Base URL to use for CNAME files, sitemaps, and RSS feeds that require an absolute URL.
    *   Quartz will avoid using this as much as possible and use relative URLs most of the time
    */

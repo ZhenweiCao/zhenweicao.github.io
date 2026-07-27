@@ -174,6 +174,81 @@
             "type": "string"
           },
           "description": "Patterns to ignore during processing"
+        },
+        "siteHeader": {
+          "type": "object",
+          "required": ["mark", "homeLabel"],
+          "additionalProperties": false,
+          "description": "Site identity and optional GitHub link shown in the shared header",
+          "properties": {
+            "mark": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Short mark shown next to the site title"
+            },
+            "homeLabel": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accessible label for the homepage link"
+            },
+            "githubUrl": {
+              "type": "string",
+              "pattern": "^https://",
+              "description": "Optional GitHub profile or repository URL"
+            },
+            "githubLabel": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accessible label for the GitHub link"
+            }
+          }
+        },
+        "navigation": {
+          "type": "object",
+          "required": ["pinnedItems"],
+          "additionalProperties": false,
+          "description": "Pinned site-header navigation mapped to Obsidian directories",
+          "properties": {
+            "pinnedLimit": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum number of pinned items to display, in configured order"
+            },
+            "pinnedItems": {
+              "type": "array",
+              "description": "Ordered navigation items",
+              "items": {
+                "type": "object",
+                "required": ["label"],
+                "additionalProperties": false,
+                "anyOf": [
+                  {
+                    "required": ["directory"]
+                  },
+                  {
+                    "required": ["href"]
+                  }
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Text shown in the site header"
+                  },
+                  "directory": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Obsidian directory relative to the vault/content root; used for the default target and active-state matching"
+                  },
+                  "href": {
+                    "type": "string",
+                    "pattern": "^/",
+                    "description": "Optional site-root-relative target that overrides the directory landing page"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },

@@ -12,6 +12,26 @@ configuration:
     - private
     - templates
     - .obsidian
+  siteHeader:
+    mark: Q
+    homeLabel: Quartz 5 首页
+    githubUrl: https://github.com/jackyzha0/quartz
+    githubLabel: 在 GitHub 查看 Quartz
+  navigation:
+    # Items are shown in this order; lower this value to pin fewer entries.
+    pinnedLimit: 4
+    pinnedItems:
+      - label: 首页
+        href: /
+      - label: 知识库
+        # Obsidian directory controls the active state; href can target a custom index note.
+        directory: GPU
+        href: /gpu/gpu-知识库索引
+      - label: 系统课程
+        directory: GPU/GPU-Kernel-Learning
+        href: /gpu/gpu-kernel-learning/readme
+      - label: 标签
+        href: /tags/
   theme:
     fontOrigin: googleFonts
     cdnCaching: true

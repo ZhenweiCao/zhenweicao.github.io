@@ -17,6 +17,7 @@
     "check": "tsc --noEmit && npx prettier . --check",
     "format": "npx prettier . --write",
     "test": "tsx --test",
+    "sync:obsidian-config": "tsx quartz/cli/syncObsidianConfig.ts",
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
     "install-plugins": "./quartz/bootstrap-cli.mjs plugin install --from-config --concurrency 1",
     "prebuild": "npm run install-plugins"

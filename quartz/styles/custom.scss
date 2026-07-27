@@ -957,6 +957,14 @@ a.home-button {
     radial-gradient(circle at 90% 10%, var(--highlight), transparent 45%), var(--surface-muted);
 }
 
+.home-preview-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 18rem;
+  object-fit: cover;
+}
+
 .home-preview-window {
   position: absolute;
   right: -1.5rem;
@@ -1164,8 +1172,7 @@ a.home-reading-item {
 }
 
 @media (max-width: 1040px) {
-  .site-nav a:nth-child(3),
-  .site-nav a:nth-child(4) {
+  .site-nav a:nth-child(n + 3) {
     display: none;
   }
 }
