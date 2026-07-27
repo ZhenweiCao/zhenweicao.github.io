@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
 configuration:
-  pageTitle: Zhenwei Cao 的技术笔记
+  pageTitle: Zhenwei's Blog
   pageTitleSuffix: ""
   enableSPA: true
   enablePopovers: true
@@ -13,7 +13,7 @@ configuration:
     - templates
     - .obsidian
   theme:
-    fontOrigin: googleFonts
+    fontOrigin: local
     cdnCaching: false
     typography:
       header: Noto Sans SC
@@ -100,6 +100,13 @@ plugins:
     order: 92
   - source: github:quartz-community/fonts
     enabled: true
+    options:
+      fontOrigin: local
+      useThemeFonts: false
+      title: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif'
+      header: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif'
+      body: '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif'
+      code: '"SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace'
   - source: github:quartz-community/remove-draft
     enabled: true
   - source: github:quartz-community/explicit-publish
@@ -130,8 +137,37 @@ plugins:
     layout:
       position: left
       priority: 50
-  - source: github:quartz-community/graph
+  - source: ./plugins/graph
     enabled: true
+    options:
+      localGraph:
+        depth: 1
+        scale: 0.95
+        repelForce: 1.15
+        centerForce: 0.2
+        linkDistance: 48
+        fontSize: 0.72
+        opacityScale: 1
+        showTags: false
+        removeTags: []
+        focusOnHover: true
+        enableRadial: false
+        onlyDirectLinks: true
+        maxNodes: 24
+      globalGraph:
+        depth: -1
+        scale: 0.78
+        repelForce: 0.8
+        centerForce: 0.15
+        linkDistance: 40
+        fontSize: 0.55
+        opacityScale: 1
+        showTags: false
+        removeTags: []
+        focusOnHover: true
+        enableRadial: false
+        onlyDirectLinks: false
+        maxNodes: 0
     layout:
       position: right
       priority: 10
