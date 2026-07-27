@@ -1,6 +1,6 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
-import { renderTranscludes, pageResources } from "./renderPage"
+import { normalizeEmbeddedObjectResources, renderTranscludes, pageResources } from "./renderPage"
 import { Root, Element } from "hast"
 import { FullSlug } from "../util/path"
 import { GlobalConfiguration } from "../cfg"
@@ -322,6 +322,40 @@ describe("pageResources", () => {
     assert.ok(
       !inlineJsServe.script.includes("/quartz/static/contentIndex.json"),
       `expected contentIndex fetch without /quartz/ prefix in serve mode, got: ${inlineJsServe.script}`,
+    )
+  })
+})
+
+describe("normalizeEmbeddedObjectResources", () => {
+  test("rebases qualified vault SVG embeds from nested pages", () => {
+    const object: Element = {
+      type: "element",
+      tagName: "object",
+      properties: { data: "GPU/Drawings/SM 内部执行与存储路径.svg" },
+      children: [],
+    }
+    const root: Root = { type: "root", children: [object] }
+
+    normalizeEmbeddedObjectResources(root, "gpu/hardware/page" as FullSlug)
+
+    assert.strictEqual(object.properties?.data, "../../gpu/drawings/sm-内部执行与存储路径.svg")
+  })
+
+  test("leaves explicit relative, absolute, and external object URLs untouched", () => {
+    const values = ["../local.svg", "/static/diagram.svg", "https://example.com/diagram.svg"]
+    const objects = values.map<Element>((data) => ({
+      type: "element",
+      tagName: "object",
+      properties: { data },
+      children: [],
+    }))
+    const root: Root = { type: "root", children: objects }
+
+    normalizeEmbeddedObjectResources(root, "gpu/hardware/page" as FullSlug)
+
+    assert.deepStrictEqual(
+      objects.map((object) => object.properties?.data),
+      values,
     )
   })
 })

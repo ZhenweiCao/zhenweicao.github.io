@@ -7,7 +7,13 @@ import {
   JSResourceToScriptElement,
   StaticResources,
 } from "../util/resources"
-import { FullSlug, RelativeURL, joinSegments, normalizeHastElement } from "../util/path"
+import {
+  FullSlug,
+  RelativeURL,
+  joinSegments,
+  normalizeHastElement,
+  transformLink,
+} from "../util/path"
 import { clone } from "../util/clone"
 import { Root, Element, ElementContent } from "hast"
 import { GlobalConfiguration } from "../cfg"
@@ -297,6 +303,40 @@ export function renderTranscludes(
   walk(root)
 }
 
+/**
+ * Obsidian SVG embeds render as `<object data="...">`. CrawlLinks rewrites `src` and `href`
+ * attributes but does not currently rewrite `data`, so vault-root-qualified embeds break on
+ * nested pages. Normalize only qualified vault paths here and leave explicit relative, absolute,
+ * and external URLs untouched.
+ */
+export function normalizeEmbeddedObjectResources(root: Root, slug: FullSlug) {
+  const walk = (node: Root | Element) => {
+    for (const child of node.children ?? []) {
+      if (child.type !== "element") continue
+
+      const resource = child.properties?.data
+      const isQualifiedVaultPath =
+        child.tagName === "object" &&
+        typeof resource === "string" &&
+        resource.includes("/") &&
+        !resource.startsWith(".") &&
+        !resource.startsWith("/") &&
+        !/^[a-z][a-z\d+.-]*:/i.test(resource)
+
+      if (isQualifiedVaultPath) {
+        child.properties.data = transformLink(slug, resource, {
+          strategy: "absolute",
+          allSlugs: [],
+        })
+      }
+
+      walk(child)
+    }
+  }
+
+  walk(root)
+}
+
 export function renderPage(
   cfg: GlobalConfiguration,
   slug: FullSlug,
@@ -317,6 +357,8 @@ export function renderPage(
       transform(root, slug, componentData)
     }
   }
+
+  normalizeEmbeddedObjectResources(root, slug)
 
   // set componentData.tree to the edited html that has transclusions rendered
   componentData.tree = root
