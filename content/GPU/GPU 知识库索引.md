@@ -35,7 +35,7 @@ tags:
 
 ## 新手路线
 
-![[GPU/Drawings/GPU 初学者学习路径.svg]]
+![](</GPU/Drawings/GPU 初学者学习路径.svg>)
 
 建议先走这条路径：
 
@@ -79,7 +79,7 @@ tags:
 
 优化闭环：
 
-![[GPU/Drawings/CUDA Kernel 优化闭环.svg]]
+![](</GPU/Drawings/CUDA Kernel 优化闭环.svg>)
 
 ### 4. Profiling 与瓶颈分析（位于 `Profiling/`）
 

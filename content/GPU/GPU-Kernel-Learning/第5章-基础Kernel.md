@@ -73,7 +73,7 @@ idx = row * N + col;
 ### 2.2 Naive 版本代码
 
 ```cpp
-// 代码位置：[[matmul.cu|GPU/CUDA/matmul.cu]] 中的 matmul_naive
+// 代码位置：[[GPU/CUDA/CUDA Kernel 示例：矩阵乘法|GPU/CUDA/matmul.cu]] 中的 matmul_naive
 
 __global__ void matmul_naive(float* A, float* B, float* C,
                               int M, int N, int K) {
@@ -155,7 +155,7 @@ C00 = A00 × B00 + A01 × B10  (tile 级别的乘法)
 ### 3.3 Shared Memory 版本代码
 
 ```cpp
-// 代码位置：[[matmul.cu|GPU/CUDA/matmul.cu]] 中的 matmul_shared
+// 代码位置：[[GPU/CUDA/CUDA Kernel 示例：矩阵乘法|GPU/CUDA/matmul.cu]] 中的 matmul_shared
 
 #define TILE_SIZE 16  // 根据硬件调整
 
@@ -293,7 +293,7 @@ for (int k = 0; k < TILE_SIZE; k += 4) {
 ## 5. 完整代码示例
 
 参见代码文件：
-- [[matmul.cu|GPU/CUDA/matmul.cu]]：包含 naive 与 shared memory 两个版本。
+- [[GPU/CUDA/CUDA Kernel 示例：矩阵乘法|GPU/CUDA/matmul.cu]]：包含 naive 与 shared memory 两个版本。
 
 ## 6. 性能对比
 

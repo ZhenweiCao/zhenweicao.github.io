@@ -1,6 +1,5 @@
 ---
 aliases:
-  - GPU 硬件背景地图
   - GPU 硬件地图
   - CUDA 硬件心智模型
 updated: 2026-05-30

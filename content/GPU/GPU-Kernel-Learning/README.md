@@ -83,7 +83,7 @@ tags:
 
 目前可直接参考的本地代码：
 
-- [[matmul.cu|GPU/CUDA/matmul.cu]]：包含 naive matmul 和 shared-memory matmul。
+- [[GPU/CUDA/CUDA Kernel 示例：矩阵乘法|GPU/CUDA/matmul.cu]]：包含 naive matmul 和 shared-memory matmul。
 - [[reduction_sum.cu|GPU/CUDA/reduction_sum.cu]]：归约求和示例。
 
 如果后续新增代码，建议放在 `GPU/CUDA/` 或专门的 `GPU/CUDA/code/` 下，并从对应章节和主文档双向链接。
