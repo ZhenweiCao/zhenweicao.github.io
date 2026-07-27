@@ -2,7 +2,8 @@ import { isDeepStrictEqual } from "node:util"
 import { parse, parseDocument } from "yaml"
 import type { NavigationConfiguration, PinnedNavigationItem, SiteHeaderConfiguration } from "../cfg"
 
-const FRONTMATTER_PATTERN = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/
+const SITE_CONFIGURATION_PATTERN =
+  /<!--\s*quartz-site-config\s*-->\s*```(?:yaml|yml)\s*\r?\n([\s\S]*?)\r?\n```/g
 
 type UnknownRecord = Record<string, unknown>
 
@@ -111,13 +112,16 @@ export type ObsidianSiteConfiguration = {
 }
 
 export function parseObsidianSiteConfiguration(markdown: string): ObsidianSiteConfiguration {
-  const frontmatterMatch = FRONTMATTER_PATTERN.exec(markdown)
-  if (frontmatterMatch === null) {
-    throw new Error("Publishing README must start with YAML frontmatter")
+  const configurationBlocks = [...markdown.matchAll(SITE_CONFIGURATION_PATTERN)]
+  if (configurationBlocks.length !== 1) {
+    throw new Error(
+      "Publishing README must contain exactly one YAML block marked with <!-- quartz-site-config -->",
+    )
   }
 
-  const frontmatter = asRecord(parse(frontmatterMatch[1]), "frontmatter")
-  const website = asRecord(frontmatter.website, "website")
+  const configuration = asRecord(parse(configurationBlocks[0][1]), "site configuration")
+  assertKnownKeys(configuration, ["website"], "site configuration")
+  const website = asRecord(configuration.website, "website")
   assertKnownKeys(website, ["base_url", "branding", "homepage", "assets", "navigation"], "website")
 
   const baseUrl = requiredString(website.base_url, "website.base_url")

@@ -5,6 +5,12 @@ import { parseObsidianSiteConfiguration, syncSiteConfigurationToQuartz } from ".
 
 const publishingReadme = `---
 title: 发布配置
+content_type: reference
+---
+# 发布配置
+
+<!-- quartz-site-config -->
+\`\`\`yaml
 website:
   base_url: zhenwei.site
   branding:
@@ -26,12 +32,11 @@ website:
       - label: 知识库
         directory: GPU
         href: /gpu/index
----
-# 发布配置
+\`\`\`
 `
 
 describe("Obsidian site configuration", () => {
-  test("converts Publishing README frontmatter to Quartz configuration", () => {
+  test("converts the marked body configuration to Quartz configuration", () => {
     assert.deepEqual(parseObsidianSiteConfiguration(publishingReadme), {
       baseUrl: "zhenwei.site",
       title: "Zhenwei's Blog",
@@ -60,6 +65,11 @@ describe("Obsidian site configuration", () => {
 
   test("rejects navigation items without a directory or href", () => {
     const invalid = `---
+title: 发布配置
+---
+
+<!-- quartz-site-config -->
+\`\`\`yaml
 website:
   base_url: zhenwei.site
   branding:
@@ -72,7 +82,7 @@ website:
     pinned_limit: 1
     items:
       - label: 无链接
----
+\`\`\`
 `
 
     assert.throws(
@@ -83,6 +93,11 @@ website:
 
   test("rejects machine-specific absolute directory mappings", () => {
     const invalid = `---
+title: 发布配置
+---
+
+<!-- quartz-site-config -->
+\`\`\`yaml
 website:
   base_url: zhenwei.site
   branding:
@@ -96,7 +111,7 @@ website:
     items:
       - label: 知识库
         directory: /Users/someone/vault/GPU
----
+\`\`\`
 `
 
     assert.throws(() => parseObsidianSiteConfiguration(invalid), /must be relative/)
@@ -105,6 +120,32 @@ website:
   test("rejects base URLs with a protocol", () => {
     const invalid = publishingReadme.replace("zhenwei.site", "https://zhenwei.site")
     assert.throws(() => parseObsidianSiteConfiguration(invalid), /must not include a protocol/)
+  })
+
+  test("does not accept website configuration from document properties", () => {
+    const propertiesOnly = `---
+title: 发布配置
+website:
+  base_url: zhenwei.site
+---
+# 发布配置
+`
+
+    assert.throws(
+      () => parseObsidianSiteConfiguration(propertiesOnly),
+      /exactly one YAML block marked/,
+    )
+  })
+
+  test("rejects multiple marked configuration blocks", () => {
+    const duplicated = `${publishingReadme}
+<!-- quartz-site-config -->
+\`\`\`yaml
+website: {}
+\`\`\`
+`
+
+    assert.throws(() => parseObsidianSiteConfiguration(duplicated), /exactly one YAML block marked/)
   })
 
   test("updates only the managed website settings in Quartz YAML", () => {
