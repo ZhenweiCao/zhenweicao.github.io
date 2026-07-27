@@ -743,12 +743,129 @@ body:not([data-slug="index"]) .page[data-frame="default"] .center > article a.in
   border-radius: 0.75rem;
   background: #fff;
 
-  > iframe {
+  > iframe,
+  .interactive-html-stage > iframe {
     display: block;
     width: 100%;
     height: var(--interactive-html-height, 40rem);
     border: 0;
     background: #fff;
+  }
+
+  .interactive-html-toolbar {
+    display: flex;
+    min-height: 2.65rem;
+    box-sizing: border-box;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.4rem 0.55rem 0.4rem 0.8rem;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface-muted);
+    color: var(--gray);
+  }
+
+  .interactive-html-toolbar-title {
+    color: var(--dark);
+    font-size: 0.78rem;
+    font-weight: 650;
+  }
+
+  .interactive-html-scale {
+    min-width: 2.7rem;
+    margin-left: auto;
+    font-family: var(--codeFont);
+    font-size: 0.72rem;
+    text-align: right;
+  }
+
+  .interactive-html-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .interactive-html-control {
+    display: grid;
+    min-width: 2rem;
+    height: 1.9rem;
+    box-sizing: border-box;
+    place-items: center;
+    padding: 0 0.45rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.4rem;
+    background: var(--light);
+    color: var(--dark);
+    cursor: pointer;
+    font-family: var(--titleFont);
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--secondary) 38%, var(--border-subtle));
+      background: var(--light);
+      color: var(--secondary);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+  }
+
+  .interactive-html-viewport {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .interactive-html-stage {
+    position: relative;
+    overflow: hidden;
+
+    > iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+    }
+  }
+
+  &:fullscreen {
+    display: flex;
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    flex-direction: column;
+
+    .interactive-html-viewport {
+      flex: 1 1 auto;
+      overflow: auto;
+    }
+  }
+}
+
+// Interactive diagrams in the source book are designed for a 1000–1300px
+// canvas. Keep the explorer available, but reclaim the right rail so the
+// embedded UI is legible without immediately entering Reader Mode.
+@media all and ($desktop) {
+  .page[data-frame="default"]:where(:has(.interactive-html-embed)) > #quartz-body {
+    grid-template-areas:
+      "grid-site-header grid-site-header"
+      "grid-sidebar-left grid-center"
+      "grid-sidebar-left grid-footer";
+    grid-template-columns: $leftRailWidth minmax(0, 1fr);
+
+    > .right.sidebar {
+      display: none;
+    }
+
+    > .center {
+      padding-inline: clamp(1.5rem, 2.5vw, 2.25rem);
+    }
   }
 }
 
@@ -809,6 +926,14 @@ body[data-slug^="tags/"] .page-listing {
         display: block;
       }
     }
+  }
+}
+
+@media all and ($desktop) {
+  :root[data-left-sidebar="closed"]
+    .page[data-frame="default"]:where(:has(.interactive-html-embed))
+    > #quartz-body {
+    grid-template-columns: $collapsedRailWidth minmax(0, 1fr);
   }
 }
 
@@ -1187,6 +1312,10 @@ a.home-reading-item {
 
   .center {
     padding-inline: clamp(1.75rem, 4vw, 3rem);
+  }
+
+  .page[data-frame="default"]:where(:has(.interactive-html-embed)) .center {
+    padding-inline: clamp(1.25rem, 2.5vw, 2rem);
   }
 }
 
