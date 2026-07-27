@@ -5,6 +5,8 @@ import type { NavigationConfiguration, PinnedNavigationItem, SiteHeaderConfigura
 const SITE_CONFIGURATION_PATTERN =
   /<!--\s*quartz-site-config\s*-->\s*```(?:yaml|yml)\s*\r?\n([\s\S]*?)\r?\n```/g
 
+export const OBSIDIAN_SITE_CONFIGURATION_PATH = "VaultMeta/Publishing/Website.md"
+
 type UnknownRecord = Record<string, unknown>
 
 function asRecord(value: unknown, location: string): UnknownRecord {
@@ -115,7 +117,7 @@ export function parseObsidianSiteConfiguration(markdown: string): ObsidianSiteCo
   const configurationBlocks = [...markdown.matchAll(SITE_CONFIGURATION_PATTERN)]
   if (configurationBlocks.length !== 1) {
     throw new Error(
-      "Publishing README must contain exactly one YAML block marked with <!-- quartz-site-config -->",
+      "Website configuration document must contain exactly one YAML block marked with <!-- quartz-site-config -->",
     )
   }
 

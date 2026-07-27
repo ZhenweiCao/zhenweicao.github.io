@@ -6,6 +6,7 @@ import { createConfiguredAssetPublisher } from "../util/configuredAssetPublisher
 import { loadRepositoryEnvironment } from "../util/localEnvironment"
 import { parseObsidianHomepage, renderHomepage } from "../util/obsidianHomepage"
 import {
+  OBSIDIAN_SITE_CONFIGURATION_PATH,
   parseObsidianSiteConfiguration,
   syncSiteConfigurationToQuartz,
 } from "../util/obsidianSiteConfig"
@@ -17,8 +18,6 @@ type CliOptions = {
 }
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
-const publishingConfigPath = join("VaultMeta", "Publishing", "README.md")
-
 function usage(): string {
   return `Usage: npm run sync:obsidian-config -- --vault <vault-path> [--check] [--upload-assets]
 
@@ -89,14 +88,14 @@ async function main(): Promise<void> {
     return
   }
 
-  const sourcePath = join(options.vaultRoot, publishingConfigPath)
+  const sourcePath = join(options.vaultRoot, OBSIDIAN_SITE_CONFIGURATION_PATH)
   const quartzConfigPath = join(repositoryRoot, "quartz.config.yaml")
-  const [publishingReadme, quartzConfig] = await Promise.all([
+  const [websiteConfiguration, quartzConfig] = await Promise.all([
     readFile(sourcePath, "utf8"),
     readFile(quartzConfigPath, "utf8"),
   ])
 
-  const siteConfiguration = parseObsidianSiteConfiguration(publishingReadme)
+  const siteConfiguration = parseObsidianSiteConfiguration(websiteConfiguration)
   const siteResult = syncSiteConfigurationToQuartz(quartzConfig, siteConfiguration)
   const homepageSourcePath = join(options.vaultRoot, siteConfiguration.homepage.source)
   const homepage = parseObsidianHomepage(await readFile(homepageSourcePath, "utf8"))
@@ -132,7 +131,7 @@ async function main(): Promise<void> {
 
   if (options.check) {
     throw new Error(
-      `Website configuration differs from ${publishingConfigPath}. Run the sync command without --check.`,
+      `Website configuration differs from ${OBSIDIAN_SITE_CONFIGURATION_PATH}. Run the sync command without --check.`,
     )
   }
 

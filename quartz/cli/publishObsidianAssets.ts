@@ -5,7 +5,10 @@ import { globby } from "globby"
 import { createVaultAssetIndex, rewriteMarkdownAssetLinks } from "../util/cosAssetPublisher"
 import { createConfiguredAssetPublisher } from "../util/configuredAssetPublisher"
 import { loadRepositoryEnvironment } from "../util/localEnvironment"
-import { parseObsidianSiteConfiguration } from "../util/obsidianSiteConfig"
+import {
+  OBSIDIAN_SITE_CONFIGURATION_PATH,
+  parseObsidianSiteConfiguration,
+} from "../util/obsidianSiteConfig"
 
 type CliOptions = {
   check: boolean
@@ -14,8 +17,6 @@ type CliOptions = {
 }
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
-const publishingConfigPath = join("VaultMeta", "Publishing", "README.md")
-
 function usage(): string {
   return `Usage: npm run publish:obsidian-assets -- --vault <vault-path> [--check | --upload]
 
@@ -81,8 +82,11 @@ async function main(): Promise<void> {
     return
   }
 
-  const publishingReadme = await readFile(join(options.vaultRoot, publishingConfigPath), "utf8")
-  const siteConfiguration = parseObsidianSiteConfiguration(publishingReadme)
+  const websiteConfiguration = await readFile(
+    join(options.vaultRoot, OBSIDIAN_SITE_CONFIGURATION_PATH),
+    "utf8",
+  )
+  const siteConfiguration = parseObsidianSiteConfiguration(websiteConfiguration)
   const publisher = createConfiguredAssetPublisher(siteConfiguration, options.upload)
 
   const contentRoot = join(repositoryRoot, "content")

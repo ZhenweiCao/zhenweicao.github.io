@@ -3,7 +3,7 @@ import { describe, test } from "node:test"
 import { parse } from "yaml"
 import { parseObsidianSiteConfiguration, syncSiteConfigurationToQuartz } from "./obsidianSiteConfig"
 
-const publishingReadme = `---
+const websiteConfigurationDocument = `---
 title: 发布配置
 content_type: reference
 ---
@@ -37,7 +37,7 @@ website:
 
 describe("Obsidian site configuration", () => {
   test("converts the marked body configuration to Quartz configuration", () => {
-    assert.deepEqual(parseObsidianSiteConfiguration(publishingReadme), {
+    assert.deepEqual(parseObsidianSiteConfiguration(websiteConfigurationDocument), {
       baseUrl: "zhenwei.site",
       title: "Zhenwei's Blog",
       siteHeader: {
@@ -118,7 +118,7 @@ website:
   })
 
   test("rejects base URLs with a protocol", () => {
-    const invalid = publishingReadme.replace("zhenwei.site", "https://zhenwei.site")
+    const invalid = websiteConfigurationDocument.replace("zhenwei.site", "https://zhenwei.site")
     assert.throws(() => parseObsidianSiteConfiguration(invalid), /must not include a protocol/)
   })
 
@@ -138,7 +138,7 @@ website:
   })
 
   test("rejects multiple marked configuration blocks", () => {
-    const duplicated = `${publishingReadme}
+    const duplicated = `${websiteConfigurationDocument}
 <!-- quartz-site-config -->
 \`\`\`yaml
 website: {}
@@ -159,7 +159,7 @@ website: {}
         href: /old
 plugins: []
 `
-    const siteConfiguration = parseObsidianSiteConfiguration(publishingReadme)
+    const siteConfiguration = parseObsidianSiteConfiguration(websiteConfigurationDocument)
     const result = syncSiteConfigurationToQuartz(quartzConfig, siteConfiguration)
     const parsed = parse(result.output)
 
@@ -191,7 +191,10 @@ plugins: []
 `
 
     assert.deepEqual(
-      syncSiteConfigurationToQuartz(quartzConfig, parseObsidianSiteConfiguration(publishingReadme)),
+      syncSiteConfigurationToQuartz(
+        quartzConfig,
+        parseObsidianSiteConfiguration(websiteConfigurationDocument),
+      ),
       {
         changed: false,
         output: quartzConfig,
