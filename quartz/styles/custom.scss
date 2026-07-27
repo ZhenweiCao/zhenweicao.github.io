@@ -1,3 +1,147 @@
 @use "./variables.scss" as *;
 
-// put your custom CSS here!
+// Visual language: calm, wide, and built for long technical reading.
+
+:root {
+  --titleFont: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --headerFont: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --bodyFont: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --codeFont: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--secondary) 8%, transparent), transparent 28rem),
+    var(--light);
+  letter-spacing: 0.012em;
+  line-height: 1.78;
+}
+
+.page {
+  max-width: 1740px;
+}
+
+.page > #quartz-body {
+  column-gap: 1.5rem;
+
+  .sidebar {
+    padding-inline: 1.25rem;
+  }
+
+  .page-header {
+    padding: 0.35rem 1.25rem 0.85rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--lightgray) 75%, transparent);
+  }
+
+  .center > article {
+    box-sizing: border-box;
+    margin-bottom: 2.5rem;
+    padding: clamp(1.5rem, 3vw, 3rem);
+    border: 1px solid color-mix(in srgb, var(--lightgray) 88%, transparent);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--light) 93%, white 7%);
+    box-shadow: 0 14px 40px rgba(20, 33, 61, 0.055);
+  }
+}
+
+article {
+  font-size: 1.02rem;
+
+  > h1 {
+    font-size: clamp(2rem, 3vw, 2.75rem) !important;
+    line-height: 1.22;
+    letter-spacing: -0.025em;
+  }
+
+  h2 {
+    margin-top: 2.8rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--lightgray);
+    font-size: 1.55rem;
+  }
+
+  h3 {
+    margin-top: 2rem;
+    font-size: 1.22rem;
+  }
+
+  p,
+  li {
+    max-width: 92ch;
+  }
+}
+
+a.internal {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--secondary) 8%, transparent);
+  color: var(--secondary);
+}
+
+pre {
+  margin: 1.4rem 0;
+  border: 1px solid color-mix(in srgb, var(--lightgray) 88%, transparent);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(20, 33, 61, 0.06);
+}
+
+code {
+  font-size: 0.9em;
+}
+
+table {
+  display: table;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--lightgray);
+  border-radius: 10px;
+
+  th {
+    background: color-mix(in srgb, var(--secondary) 9%, var(--light));
+    color: var(--dark);
+  }
+
+  tr:nth-child(even) {
+    background: color-mix(in srgb, var(--lightgray) 30%, transparent);
+  }
+}
+
+.callout {
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--callout-color) 28%, var(--lightgray));
+  box-shadow: inset 3px 0 0 var(--callout-color);
+}
+
+img,
+video {
+  border: 1px solid color-mix(in srgb, var(--lightgray) 90%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(20, 33, 61, 0.08);
+}
+
+.explorer,
+.toc,
+.backlinks {
+  font-size: 0.9rem;
+}
+
+.toc {
+  border-left: 1px solid var(--lightgray);
+  padding-left: 1rem;
+}
+
+@media all and ($mobile) {
+  body {
+    line-height: 1.7;
+  }
+
+  .page > #quartz-body .center > article {
+    padding: 1.25rem;
+    border-radius: 12px;
+    border-inline: 0;
+    box-shadow: none;
+  }
+
+  article {
+    font-size: 1rem;
+  }
+}
