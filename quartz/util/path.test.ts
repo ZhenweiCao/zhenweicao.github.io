@@ -139,6 +139,17 @@ describe("transforms", () => {
     )
   })
 
+  test("slugifyAssetFilePath preserves standalone HTML asset extensions", () => {
+    assert.strictEqual(
+      path.slugifyAssetFilePath("GPU/Interactive/SM Architecture.html" as path.FilePath),
+      "gpu/interactive/sm-architecture.html",
+    )
+    assert.strictEqual(
+      path.slugifyAssetFilePath("GPU/Images/SM Diagram.svg" as path.FilePath),
+      "gpu/images/sm-diagram.svg",
+    )
+  })
+
   test("slugifyFilePath + simplifySlug end-to-end canonicalization", () => {
     // Both folder-note conventions must produce identical user-facing URLs.
     const indexStyle = path.simplifySlug(path.slugifyFilePath("characters/index.md" as any))

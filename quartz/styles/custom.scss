@@ -733,6 +733,25 @@ body:not([data-slug="index"]) .page[data-frame="default"] .center > article a.in
   box-shadow: none;
 }
 
+.page[data-frame="default"] .center > article .interactive-html-embed {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  background: #fff;
+
+  > iframe {
+    display: block;
+    width: 100%;
+    height: var(--interactive-html-height, 40rem);
+    border: 0;
+    background: #fff;
+  }
+}
+
 .page[data-frame="default"] .center > article .callout {
   max-width: $readingWidth;
   margin: 1.4rem 0;

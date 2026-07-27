@@ -8,10 +8,14 @@ import {
   StaticResources,
 } from "../util/resources"
 import {
+  FilePath,
   FullSlug,
   RelativeURL,
   joinSegments,
   normalizeHastElement,
+  pathToRoot,
+  slugifyAssetFilePath,
+  slugifyFilePath,
   transformLink,
 } from "../util/path"
 import { clone } from "../util/clone"
@@ -36,6 +40,62 @@ interface RenderComponents {
 }
 
 const headerRegex = new RegExp(/h[1-6]/)
+
+function findInteractiveHtmlAsset(
+  targetSlug: FullSlug,
+  assetFiles: FilePath[],
+): FilePath | undefined {
+  return assetFiles.find(
+    (filePath) =>
+      filePath.toLowerCase().endsWith(".html") && slugifyFilePath(filePath) === targetSlug,
+  )
+}
+
+function interactiveHtmlAssetUrl(currentSlug: FullSlug, assetPath: FilePath): RelativeURL {
+  return joinSegments(pathToRoot(currentSlug), slugifyAssetFilePath(assetPath)) as RelativeURL
+}
+
+function interactiveHtmlTitle(assetPath: FilePath): string {
+  const fileName =
+    assetPath
+      .split("/")
+      .at(-1)
+      ?.replace(/\.html$/i, "") ?? "Interactive content"
+  return fileName.replaceAll("_", " ").replaceAll("-", " ")
+}
+
+function interactiveHtmlHeight(alias: unknown): number {
+  if (typeof alias !== "string") return 640
+  const match = alias.trim().match(/(?:^|x)(\d{2,4})$/i)
+  if (match === null) return 640
+  return Math.min(1600, Math.max(240, Number.parseInt(match[1], 10)))
+}
+
+function interactiveHtmlEmbed(currentSlug: FullSlug, assetPath: FilePath, alias: unknown): Element {
+  const height = interactiveHtmlHeight(alias)
+  return {
+    type: "element",
+    tagName: "div",
+    properties: {
+      className: ["interactive-html-embed"],
+    },
+    children: [
+      {
+        type: "element",
+        tagName: "iframe",
+        properties: {
+          src: interactiveHtmlAssetUrl(currentSlug, assetPath),
+          title: interactiveHtmlTitle(assetPath),
+          loading: "lazy",
+          allowFullScreen: true,
+          style: `--interactive-html-height: ${height}px`,
+        },
+        children: [],
+      },
+    ],
+  }
+}
+
 export function pageResources(
   baseDir: FullSlug | RelativeURL,
   staticResources: StaticResources,
@@ -147,6 +207,19 @@ export function renderTranscludes(
 
       const inner = el.children[0] as Element
       const transcludeTarget = (inner.properties["data-slug"] ?? slug) as FullSlug
+      const htmlAsset = findInteractiveHtmlAsset(
+        transcludeTarget,
+        componentData.ctx?.allFiles ?? [],
+      )
+      if (htmlAsset !== undefined) {
+        children[i] = interactiveHtmlEmbed(
+          slug,
+          htmlAsset,
+          el.properties.dataEmbedAlias ?? el.properties["data-embed-alias"],
+        )
+        continue
+      }
+
       if (visited.has(transcludeTarget)) {
         console.warn(
           styleText(
@@ -304,6 +377,34 @@ export function renderTranscludes(
 }
 
 /**
+ * CrawlLinks intentionally removes .html as a page extension. Standalone interactive HTML
+ * assets are not Quartz pages, so restore their emitted asset URL for ordinary "open full page"
+ * links after Markdown processing.
+ */
+export function normalizeInteractiveHtmlLinks(root: Root, slug: FullSlug, assetFiles: FilePath[]) {
+  const walk = (node: Root | Element) => {
+    for (const child of node.children ?? []) {
+      if (child.type !== "element") continue
+
+      if (child.tagName === "a") {
+        const targetSlug = child.properties?.["data-slug"]
+        if (typeof targetSlug === "string") {
+          const htmlAsset = findInteractiveHtmlAsset(targetSlug as FullSlug, assetFiles)
+          if (htmlAsset !== undefined) {
+            child.properties.href = interactiveHtmlAssetUrl(slug, htmlAsset)
+            child.properties["data-router-ignore"] = ""
+          }
+        }
+      }
+
+      walk(child)
+    }
+  }
+
+  walk(root)
+}
+
+/**
  * Obsidian SVG embeds render as `<object data="...">`. CrawlLinks rewrites `src` and `href`
  * attributes but does not currently rewrite `data`, so vault-root-qualified embeds break on
  * nested pages. Normalize only qualified vault paths here and leave explicit relative, absolute,
@@ -359,6 +460,7 @@ export function renderPage(
   }
 
   normalizeEmbeddedObjectResources(root, slug)
+  normalizeInteractiveHtmlLinks(root, slug, componentData.ctx?.allFiles ?? [])
 
   // set componentData.tree to the edited html that has transclusions rendered
   componentData.tree = root

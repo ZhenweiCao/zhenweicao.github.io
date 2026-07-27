@@ -1,19 +1,25 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
-import { normalizeEmbeddedObjectResources, renderTranscludes, pageResources } from "./renderPage"
+import {
+  normalizeEmbeddedObjectResources,
+  normalizeInteractiveHtmlLinks,
+  renderTranscludes,
+  pageResources,
+} from "./renderPage"
 import { Root, Element } from "hast"
-import { FullSlug } from "../util/path"
+import { FilePath, FullSlug } from "../util/path"
 import { GlobalConfiguration } from "../cfg"
 import { QuartzComponentProps } from "./types"
 import { StaticResources } from "../util/resources"
 
-function makeTranscludeBlockquote(targetSlug: string, block?: string): Element {
+function makeTranscludeBlockquote(targetSlug: string, block?: string, alias?: string): Element {
   return {
     type: "element",
     tagName: "blockquote",
     properties: {
       className: ["transclude"],
       ...(block ? { dataBlock: block } : {}),
+      ...(alias ? { dataEmbedAlias: alias } : {}),
     },
     children: [
       {
@@ -43,8 +49,13 @@ const cfg = { locale: "en-US" } as GlobalConfiguration
 
 function makeComponentData(
   allFiles: QuartzComponentProps["allFiles"],
+  assetFiles: FilePath[] = [],
 ): Pick<QuartzComponentProps, "allFiles" | "cfg"> {
-  return { allFiles, cfg } as unknown as QuartzComponentProps
+  return {
+    allFiles,
+    cfg,
+    ctx: { allFiles: assetFiles },
+  } as unknown as QuartzComponentProps
 }
 
 describe("renderTranscludes", () => {
@@ -119,6 +130,62 @@ describe("renderTranscludes", () => {
       "second embed should resolve, not be rejected as circular",
     )
     assert.ok(!secondText.includes("Circular transclusion"), "should not show circular warning")
+  })
+
+  test("renders a local HTML asset transclusion as an iframe", () => {
+    const targetSlug = "gpu/modern-gpu-programming-for-mlsys/assets/interactive/sm_architecture"
+    const assetPath =
+      "GPU/modern-gpu-programming-for-mlsys/assets/interactive/sm_architecture.html" as FilePath
+    const root: Root = {
+      type: "root",
+      children: [makeTranscludeBlockquote(targetSlug, undefined, "100%x620")],
+    }
+
+    renderTranscludes(
+      root,
+      cfg,
+      "gpu/modern-gpu-programming-for-mlsys/part-1-gpu/01-gpu-execution-model" as FullSlug,
+      makeComponentData([], [assetPath]) as QuartzComponentProps,
+      new Set<FullSlug>(),
+    )
+
+    const wrapper = root.children[0] as Element
+    const iframe = wrapper.children[0] as Element
+    assert.deepStrictEqual(wrapper.properties?.className, ["interactive-html-embed"])
+    assert.strictEqual(iframe.tagName, "iframe")
+    assert.strictEqual(
+      iframe.properties?.src,
+      "../../../gpu/modern-gpu-programming-for-mlsys/assets/interactive/sm_architecture.html",
+    )
+    assert.strictEqual(iframe.properties?.style, "--interactive-html-height: 620px")
+  })
+
+  test("restores the .html extension for a local full-page link", () => {
+    const targetSlug = "gpu/modern-gpu-programming-for-mlsys/assets/interactive/sm_architecture"
+    const assetPath =
+      "GPU/modern-gpu-programming-for-mlsys/assets/interactive/sm_architecture.html" as FilePath
+    const link: Element = {
+      type: "element",
+      tagName: "a",
+      properties: {
+        href: "../../../gpu/modern-gpu-programming-for-mlsys/assets/interactive/sm_architecture",
+        "data-slug": targetSlug,
+      },
+      children: [{ type: "text", value: "Open as a full page" }],
+    }
+    const root: Root = { type: "root", children: [link] }
+
+    normalizeInteractiveHtmlLinks(
+      root,
+      "gpu/modern-gpu-programming-for-mlsys/part-1-gpu/01-gpu-execution-model" as FullSlug,
+      [assetPath],
+    )
+
+    assert.strictEqual(
+      link.properties?.href,
+      "../../../gpu/modern-gpu-programming-for-mlsys/assets/interactive/sm_architecture.html",
+    )
+    assert.strictEqual(link.properties?.["data-router-ignore"], "")
   })
 
   test("allows different sections of the same page to be embedded", () => {

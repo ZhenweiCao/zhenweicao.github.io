@@ -1,3 +1,9 @@
+import {
+  getFileExtension as sharedGetFileExtension,
+  slugifyFilePath as sharedSlugifyFilePath,
+} from "@quartz-community/utils"
+import type { FilePath } from "@quartz-community/utils"
+
 // Re-export shared path utilities from @quartz-community/utils
 export {
   isFilePath,
@@ -24,13 +30,18 @@ export {
   normalizeHastElement,
 } from "@quartz-community/utils"
 
-export type {
-  FilePath,
-  FullSlug,
-  SimpleSlug,
-  RelativeURL,
-  TransformOptions,
-} from "@quartz-community/utils"
+export type { FilePath }
+export type { FullSlug, SimpleSlug, RelativeURL, TransformOptions } from "@quartz-community/utils"
+
+/**
+ * Quartz treats .html as a page extension when generating slugs, but standalone HTML files in
+ * content are assets. Keep their extension so static hosts return text/html instead of an
+ * extensionless download.
+ */
+export function slugifyAssetFilePath(fp: FilePath): FilePath {
+  const slug = sharedSlugifyFilePath(fp)
+  return (sharedGetFileExtension(fp)?.toLowerCase() === ".html" ? `${slug}.html` : slug) as FilePath
+}
 
 // --- v5-specific exports below ---
 
