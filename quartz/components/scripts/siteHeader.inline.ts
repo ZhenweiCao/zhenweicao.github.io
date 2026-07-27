@@ -1,5 +1,79 @@
 let cleanupSiteHeader = () => {}
 
+type TutorialExplorerScope = {
+  label: string
+  prefix: string
+}
+
+const tutorialExplorerScopes: TutorialExplorerScope[] = [
+  {
+    label: "GPU Kernel Learning",
+    prefix: "gpu/gpu-kernel-learning",
+  },
+  {
+    label: "Modern GPU Programming for MLSys",
+    prefix: "gpu/modern-gpu-programming-for-mlsys",
+  },
+]
+
+const activeTutorialExplorerScope = (): TutorialExplorerScope | undefined => {
+  const slug = document.body.dataset.slug ?? ""
+  return tutorialExplorerScopes.find(
+    ({ prefix }) => slug === prefix || slug.startsWith(`${prefix}/`),
+  )
+}
+
+const bindTutorialExplorerScope = (explorer: HTMLElement): (() => void) => {
+  const list = explorer.querySelector<HTMLUListElement>(".explorer-ul")
+  const heading = explorer.querySelector<HTMLElement>(".title-button h2")
+  if (!list) return () => {}
+
+  const defaultHeading = heading?.textContent ?? "Explorer"
+
+  const applyScope = () => {
+    const scope = activeTutorialExplorerScope()
+    if (!scope) {
+      delete list.dataset.tutorialScope
+      delete explorer.dataset.tutorialScope
+      if (heading) heading.textContent = defaultHeading
+      return
+    }
+
+    const targetPath = `${scope.prefix}/index`
+    const targetFolder = Array.from(
+      list.querySelectorAll<HTMLElement>(".folder-container[data-folderpath]"),
+    ).find((folder) => folder.dataset.folderpath === targetPath)
+    const directEntries = list.querySelectorAll(":scope > li:not(.overflow-end)")
+
+    if (!targetFolder && list.dataset.tutorialScope === scope.prefix && directEntries.length > 0) {
+      return
+    }
+    if (!targetFolder) return
+
+    const folderItem = targetFolder.closest<HTMLLIElement>("li")
+    const scopedContent = folderItem?.querySelector<HTMLUListElement>(
+      ":scope > .folder-outer > ul.content",
+    )
+    if (!scopedContent) return
+
+    const fragment = document.createDocumentFragment()
+    for (const child of Array.from(scopedContent.children)) fragment.appendChild(child)
+
+    const overflowEnd =
+      list.querySelector<HTMLElement>(":scope > .overflow-end")?.cloneNode(true) ??
+      Object.assign(document.createElement("li"), { className: "overflow-end" })
+    list.replaceChildren(fragment, overflowEnd)
+    list.dataset.tutorialScope = scope.prefix
+    explorer.dataset.tutorialScope = scope.prefix
+    if (heading) heading.textContent = scope.label
+  }
+
+  const observer = new MutationObserver(applyScope)
+  observer.observe(list, { childList: true, subtree: true })
+  queueMicrotask(applyScope)
+  return () => observer.disconnect()
+}
+
 const bindSiteHeader = () => {
   cleanupSiteHeader()
   const cleanupCallbacks: Array<() => void> = []
@@ -37,6 +111,7 @@ const bindSiteHeader = () => {
   const menuButton = document.querySelector<HTMLButtonElement>(".site-menu-toggle")
   const explorerButton = document.querySelector<HTMLButtonElement>(".mobile-explorer")
   const explorer = explorerButton?.closest<HTMLElement>(".explorer")
+  if (explorer) cleanupCallbacks.push(bindTutorialExplorerScope(explorer))
   if (menuButton && explorerButton && explorer) {
     const mobileViewport = window.matchMedia("(max-width: 799.98px)")
 

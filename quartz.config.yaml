@@ -24,7 +24,7 @@ configuration:
         href: /
       - label: 知识库
         directory: GPU
-        href: /gpu/gpu-知识库索引
+        href: /gpu/
       - label: Tutorial
         items:
           - label: GPU Kernel Learning
@@ -267,7 +267,7 @@ plugins:
         - tags
         - aliases
       excludedProperties: []
-      hidePropertiesView: false
+      hidePropertiesView: true
       collapsed: true
       delimiters: ---
       language: yaml

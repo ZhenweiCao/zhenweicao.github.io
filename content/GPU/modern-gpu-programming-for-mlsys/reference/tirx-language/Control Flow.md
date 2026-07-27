@@ -1,4 +1,10 @@
 ---
+title: "Control flow"
+content_type: reference
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "Control flow"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/tirx_guide/language_reference/cuda/control_flow.rst
@@ -13,16 +19,11 @@ tags:
 ---
 # Control flow
 
-
-Control flow is `if`, the loop family, and `while` — each maps to the obvious
-CUDA.
+Control flow is `if`, the loop family, and `while` — each maps to the obvious CUDA.
 
 ## if
 
-
-A Python `if` / `else` becomes a CUDA `if` / `else`. Guard work by a
-thread/lane comparison, or elect a single issuing thread with
-`T.ptx.elect_sync()`:
+A Python `if` / `else` becomes a CUDA `if` / `else`. Guard work by a thread/lane comparison, or elect a single issuing thread with `T.ptx.elect_sync()`:
 
 ```python
 if tx < 128:
@@ -34,7 +35,7 @@ if T.ptx.elect_sync():
     ...                              # one elected lane (e.g. to issue TMA/MMA)
 
 ```
-```c++
+```cpp
 if (((int)threadIdx.x) < 128) {
   A_ptr[tx] = A_ptr[tx] * 2.0f;
 } else {
@@ -42,33 +43,21 @@ if (((int)threadIdx.x) < 128) {
 }
 
 ```
-For an expression-level choice (no branch), use `T.if_then_else(cond, a, b)`. It
-lowers to a ternary, so it introduces no control-flow divergence:
+For an expression-level choice (no branch), use `T.if_then_else(cond, a, b)`. It lowers to a ternary, so it introduces no control-flow divergence:
 
-```c++
+```cpp
 O_ptr[tx] = (A_ptr[tx] > 0.0f) ? A_ptr[tx] : 0.0f;
 
 ```
 ## Uniform vs. divergent control flow
 
+Per-thread guards such as `if tx < 128` are fine for ordinary work, but **collective** operations must be reached *uniformly* by every thread they synchronize.
 
-Per-thread guards such as `if tx < 128` are fine for ordinary work, but
-**collective** operations must be reached *uniformly* by every thread they
-synchronize. 
+For example, `T.cuda.cta_sync()` maps to `__syncthreads()`, which requires all threads in the thread block. It must never sit inside a thread- or warpgroup-divergent branch: if placed inside `if wg_id == 0:`, the other warpgroups will never arrive and the kernel will deadlock. When only one warpgroup needs to synchronize, use a warpgroup-scoped `T.cuda.warpgroup_sync(id)` (see [[GPU/modern-gpu-programming-for-mlsys/part-3-gemm/14 Scaling GEMM with Warp Specialization and Clusters|Scaling GEMM with Warp Specialization and Clusters]] and [[GPU/modern-gpu-programming-for-mlsys/reference/tirx-language/CUDA and PTX Intrinsics|CUDA C++/PTX intrinsics]]).
 
-For example, `T.cuda.cta_sync()` maps to `__syncthreads()`, which requires all
-threads in the thread block. It must never sit inside a thread- or
-warpgroup-divergent branch: if placed inside `if wg_id == 0:`, the other
-warpgroups will never arrive and the kernel will deadlock. When only one warpgroup
-needs to synchronize, use a warpgroup-scoped `T.cuda.warpgroup_sync(id)` (see
-[[GPU/modern-gpu-programming-for-mlsys/part-3-gemm/14 Scaling GEMM with Warp Specialization and Clusters|Scaling GEMM with Warp Specialization and Clusters]] and [[GPU/modern-gpu-programming-for-mlsys/reference/tirx-language/CUDA and PTX Intrinsics|CUDA C++/PTX intrinsics]]). 
-
-The same caution applies to barrier setup. An `mbarrier` `.init()` lowers to a
-single-thread guard (`if (threadIdx.x < 1)`). Nesting it inside another divergent
-branch can leave the barrier uninitialized, leading to unspecified launch failures.
+The same caution applies to barrier setup. An `mbarrier` `.init()` lowers to a single-thread guard (`if (threadIdx.x < 1)`). Nesting it inside another divergent branch can leave the barrier uninitialized, leading to unspecified launch failures.
 
 ## loop
-
 
 Loops come in four flavors; a plain Python `range` becomes `T.serial`:
 
@@ -84,7 +73,7 @@ for i, j in T.grid(8, 8):
     B[i, j] = T.max(A[i, j], T.float32(0.0))
 
 ```
-```c++
+```cpp
 for (int i = 0; i < 8; ++i)
   for (int j = 0; j < 8; ++j)
     B_ptr[i * 8 + j] = max(A_ptr[i * 8 + j], 0.0f);
@@ -94,9 +83,7 @@ for (int i = 0; i < 8; ++i)
 
 ## while
 
-
-A `while` loop runs until its condition is false. Use a mutable scalar counter
-(see [[GPU/modern-gpu-programming-for-mlsys/reference/tirx-language/Buffers and Memory|Buffers and memory]]):
+A `while` loop runs until its condition is false. Use a mutable scalar counter (see [[GPU/modern-gpu-programming-for-mlsys/reference/tirx-language/Buffers and Memory|Buffers and memory]]):
 
 ```python
 i: T.int32 = 0
@@ -105,10 +92,9 @@ while i < 64:
     i += 1
 
 ```
-It lowers to a `while (1)` with an early-exit `break` (the counter is a
-one-element register buffer):
+It lowers to a `while (1)` with an early-exit `break` (the counter is a one-element register buffer):
 
-```c++
+```cpp
 int i_ptr[1];
 i_ptr[0] = 0;
 while (1) {

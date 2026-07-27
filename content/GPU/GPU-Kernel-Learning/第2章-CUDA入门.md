@@ -1,4 +1,9 @@
 ---
+title: "第2章：CUDA 入门"
+content_type: guide
+maturity: reviewed
+updated: 2026-07-27
+publish: true
 tags:
   - gpu-computing
   - gpu-programming
@@ -106,7 +111,7 @@ nvcc hello_cuda.cu -o hello_cuda
 ```
 
 **输出**：
-```
+```text
 Hello from CPU!
 Hello from GPU thread 0!
 Hello from GPU thread 1!
@@ -182,7 +187,7 @@ int main() {
 ```
 
 **输出**：
-```
+```text
 Block 0, Thread 0, Global 0
 Block 0, Thread 1, Global 1
 Block 0, Thread 2, Global 2
@@ -194,7 +199,7 @@ Block 1, Thread 1, Global 5
 
 ### 2.3.2 索引计算公式（重要！）
 
-```
+```text
 全局索引 = blockIdx.x * blockDim.x + threadIdx.x
 ```
 
@@ -241,7 +246,7 @@ int main() {
 
 ### 2.4.1 CUDA 内存模型
 
-```
+```text
 ┌─────────────────┐        ┌─────────────────┐
 │      CPU        │        │      GPU        │
 │   (Host)        │        │   (Device)      │

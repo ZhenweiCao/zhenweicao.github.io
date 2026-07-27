@@ -1,4 +1,10 @@
 ---
+title: "Scaling GEMM with Warp Specialization and Clusters"
+content_type: guide
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "Scaling GEMM with Warp Specialization and Clusters"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/chapter_gemm_advanced/index.md
@@ -27,7 +33,6 @@ We pursue that idea in three steps of widening cooperation. Step 7 ([[GPU/modern
 It helps to see the three steps as one pattern at different scales. Step 7 keeps the full pipeline inside one CTA: TMA and MMA share one warpgroup, while writeback runs in another. Step 8 widens cooperation across CTAs, producing a 256×256 tile that spans both of them. Step 9 pushes the compute density further still: the cluster output grows to 512×256, each staged B tile is reused by both consumers, and we arrive at the densest variant in the tutorial.
 
 One thing stays constant through all of this. The SMEM, TMEM, and register layouts still honor the contracts we built in the previous two chapters; what changes is *who cooperates*, not how data is laid out. Step 8 is the first time the cooperating scope widens past a single CTA, so its operand tiles are split across two CTAs' shared memory and one layout spans both CTAs along the `cbx` cluster axis.
-
 
 ## Step 7: Warp Specialization + Pipeline
 
@@ -329,7 +334,6 @@ Step 7 is the first GEMM kernel where TMA load, `tcgen05` MMA, and writeback are
 
 Warp specialization got the threads of one CTA cooperating. The next step widens that cooperation across the boundary of the CTA itself, putting two of them to work on a single larger tile.
 
-
 ## Step 8: 2-CTA Cluster
 
 Step 7 got the engines overlapping, but each CTA was still off computing its own 128×128 tile in isolation, reloading operands that no neighbor could borrow. Step 8 breaks that isolation. Two CTAs join into a cluster and gain the ability to reach into each other's shared memory, so a single cooperative `tcgen05` MMA produces one 256×256 tile that spans both of them, and one load of B now feeds twice as much MMA work. As before, M=N=K=4096.
@@ -348,7 +352,6 @@ Step 7 got the engines overlapping, but each CTA was still off computing its own
 - `cta_group=2` for cooperative MMA over a 256x256 cluster tile
 
 - Cross-CTA barrier signaling with `cta_mask`
-
 
 ### Cluster Tile Shape
 
@@ -411,7 +414,6 @@ mma2ld.arrive(0, cta_group=CTA_GROUP, cta_mask=3)
 T.cuda.cluster_sync()
 ```
 
-
 ### Cluster-Scope Changes
 
 Those six edits all stem from the same shift: the cooperating scope is now the cluster rather than a single CTA. The points below spell out what that widening means in practice: how each CTA finds its place, whose barriers the cluster coordinates on, and which CTA actually issues the cooperative MMA.
@@ -425,7 +427,6 @@ Those six edits all stem from the same shift: the cooperating scope is now the c
 - **Multicast arrive**: `tcgen05.commit(..., cta_group=2, cta_mask=3)` is issued only by CTA-0 but signals both CTAs' barriers. `cta_mask=3` (binary `11`) means both CTA-0 and CTA-1 are targeted.
 
 - **ld2mma init count**: `init(128 * CTA_GROUP)` --- both CTAs' writeback warpgroups (128 threads each) arrive.
-
 
 **Implementation.**
 
@@ -622,7 +623,6 @@ If Step 8 comes out *slower* than Step 7, the culprit is almost always one of th
 
 Clusters raised reuse *across* CTAs. The final step turns inward and raises compute density *within* each CTA, by giving the producer a second MMA consumer to keep fed.
 
-
 ## Step 9: Multi-Consumer Warp Specialization
 
 By Step 8 the MMA is genuinely busy, but a single consumer warp can only chew through a staged B tile so fast, and that B tile is just sitting there in SMEM the whole time, available to anyone who cares to read it. The final optimization takes advantage of that: it adds a second MMA consumer that multiplies a *different* A block against the *same* B tile. The compute density per CTA doubles, and the cluster output grows from 256×256 to 512×256. As before, M=N=K=4096.
@@ -639,7 +639,6 @@ By Step 8 the MMA is genuinely busy, but a single consumer warp can only chew th
 - Multiple writeback warpgroups with independent barrier slots
 
 - The structure used by the most optimized GEMM variant in this tutorial
-
 
 ### Multi-Consumer Structure
 
@@ -672,7 +671,6 @@ Concretely, supporting the second consumer touches the kernel in a handful of pl
 - Tile address: `m_st = (m_idx * NUM_CONSUMER * CTA_GROUP + cbx) * BLK_M` --- M direction has the extra `NUM_CONSUMER` factor because each cluster tile now spans `NUM_CONSUMER` consumers in M. Tile scheduler uses `num_m_tiles = M // 256 // NUM_CONSUMER` (cluster tile is 512x256)
 
 - Writeback uses chunked `EPI_N` so each iteration keeps fewer TMEM-readback values live in registers
-
 
 **Implementation.**
 
@@ -905,7 +903,6 @@ Plotted at the measured milestones, those same four contributions trace the desc
 Notice that the gains shrink as we go down the list, and there is a structural reason for it rather than any weakening of effort. The early steps go after *memory* bottlenecks (TMA replaces software copies, clusters raise arithmetic intensity), and that is where most of the 70 ms was actually being spent, so those steps pay off the most. By Step 8 the kernel is already within ~10% of cuBLAS (0.104 vs 0.094 ms) and is close to *compute-bound*, which means there is very little memory stall left to hide; Step 9's multi-consumer overlap recovers most of what little remains. A roughly 10% final gain is exactly what to expect near the compute ceiling: it is the diminishing return of a problem that is nearly solved, not the sign of a weak optimization.
 
 Everything we built in this chapter (TMA loads, the `tcgen05` MMA, TMEM readback, and warp-specialized barriers) carries straight over into the next one. Flash Attention reuses all of it, and then raises the difficulty by wedging an online-softmax step between two MMA phases rather than simply repeating a single one.
-
 
 ## Exercises
 

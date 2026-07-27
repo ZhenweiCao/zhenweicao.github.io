@@ -1,4 +1,9 @@
 ---
+title: "第 5 章 - 基础 Kernel 实现"
+content_type: guide
+maturity: reviewed
+updated: 2026-07-27
+publish: true
 tags:
   - gpu-computing
   - gpu-programming
@@ -32,13 +37,13 @@ tags:
 
 给定两个矩阵 A (M×K) 和 B (K×N)，它们的乘积 C = A × B 是一个 (M×N) 的矩阵：
 
-```
+```text
 C[i][j] = Σ A[i][k] × B[k][j]  (k 从 0 到 K-1)
 ```
 
 **可视化表示**：
 
-```
+```text
         A (M×K)           B (K×N)
     ┌──────────┐      ┌──────────┐
     │ a00 a01  │      │ b00 b01  │
@@ -73,7 +78,7 @@ idx = row * N + col;
 ### 2.2 Naive 版本代码
 
 ```cpp
-// 代码位置：[[GPU/CUDA/CUDA Kernel 示例：矩阵乘法|GPU/CUDA/matmul.cu]] 中的 matmul_naive
+// 代码位置：[[matmul.cu|GPU/CUDA/matmul.cu]] 中的 matmul_naive
 
 __global__ void matmul_naive(float* A, float* B, float* C,
                               int M, int N, int K) {
@@ -99,7 +104,7 @@ __global__ void matmul_naive(float* A, float* B, float* C,
 
 **内存访问模式分析**：
 
-```
+```text
 矩阵 A 的访问：A[row * K + k]
 - 同一线程内：顺序访问 (k 递增) ✓
 - 同一 warp 内：不同线程访问不同 row，导致非合并访问 ✗
@@ -126,7 +131,7 @@ __global__ void matmul_naive(float* A, float* B, float* C,
 
 **优化策略**：
 
-```
+```text
 将矩阵分块（tiling），每块加载到 shared memory：
 
 1. 将 C 的一个 tile 计算所需的数据加载到 shared memory
@@ -136,7 +141,7 @@ __global__ void matmul_naive(float* A, float* B, float* C,
 
 ### 3.2 分块策略可视化
 
-```
+```text
 假设 TILE_SIZE = 2, 矩阵 A (4×4), B (4×4)
 
 A 被分成 4 个 tile:          B 被分成 4 个 tile:
@@ -155,7 +160,7 @@ C00 = A00 × B00 + A01 × B10  (tile 级别的乘法)
 ### 3.3 Shared Memory 版本代码
 
 ```cpp
-// 代码位置：[[GPU/CUDA/CUDA Kernel 示例：矩阵乘法|GPU/CUDA/matmul.cu]] 中的 matmul_shared
+// 代码位置：[[matmul.cu|GPU/CUDA/matmul.cu]] 中的 matmul_shared
 
 #define TILE_SIZE 16  // 根据硬件调整
 
@@ -212,7 +217,7 @@ __global__ void matmul_shared(float* A, float* B, float* C,
 
 ### 3.4 数据复用分析
 
-```
+```text
 对于 TILE_SIZE = 16：
 
 - 每个线程计算 1 个输出元素
@@ -293,7 +298,7 @@ for (int k = 0; k < TILE_SIZE; k += 4) {
 ## 5. 完整代码示例
 
 参见代码文件：
-- [[GPU/CUDA/CUDA Kernel 示例：矩阵乘法|GPU/CUDA/matmul.cu]]：包含 naive 与 shared memory 两个版本。
+- [[matmul.cu|GPU/CUDA/matmul.cu]]：包含 naive 与 shared memory 两个版本。
 
 ## 6. 性能对比
 

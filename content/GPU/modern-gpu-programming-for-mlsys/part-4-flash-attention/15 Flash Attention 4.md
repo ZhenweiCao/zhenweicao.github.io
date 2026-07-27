@@ -1,4 +1,10 @@
 ---
+title: "Flash Attention 4"
+content_type: guide
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "Flash Attention 4"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/chapter_flash_attention/index.md
@@ -287,8 +293,7 @@ The reason for the split is to keep the Tensor Core busy. Run the value MMA as a
 
 All of `S`, `P`, and `O` have to share one `128 x 512` TMEM allocation, and the way they are packed into it is exactly why barriers and layout turn out to be inseparable in this kernel:
 
-The figure below shows that packing directly: score slots, numerator slots, and output slots all
-share one TMEM allocation, so the barrier protocol is what makes the reuse legal.
+The figure below shows that packing directly: score slots, numerator slots, and output slots all share one TMEM allocation, so the barrier protocol is what makes the reuse legal.
 
 ![[GPU/modern-gpu-programming-for-mlsys/assets/images/tmem_layout_v3.png]]
 
@@ -338,8 +343,7 @@ This is the hardest part of the kernel, so it pays to come at it gradually. Star
 
 Everything not in that list is pipeline bookkeeping: barriers that release an SMEM, TMEM, or staging buffer so that another role may reuse it. The useful thing is that every barrier, whether it carries data or only bookkeeping, reads the same way, as a tile handoff. You ask who produced data, who consumes it, and which buffer becomes free once they are both done.
 
-The next figure collapses those handoffs into the exact readiness gates for the two MMA phases:
-what the score MMA waits on, and what the value MMA must wait on before it can accumulate.
+The next figure collapses those handoffs into the exact readiness gates for the two MMA phases: what the score MMA waits on, and what the value MMA must wait on before it can accumulate.
 
 ![[GPU/modern-gpu-programming-for-mlsys/assets/images/flash_attention_main_handoff.png]]
 
@@ -349,8 +353,7 @@ Read this diagram as a set of correctness gates rather than a schedule. It answe
 
 There is one handoff that does not fit the tile-readiness mold: the softmax-to-correction edge. Rather than passing a tile, softmax passes a single scalar (`acc_scale` during the K/V loop, or the final `row_sum` in the epilogue) through a one-slot SMEM mailbox to WG2. Since that slot is reused on every iteration, a `full`/`empty` barrier pair has to guard it:
 
-The figure below zooms in on that mailbox handshake, which is why this one barrier pair should be
-read as a scalar producer-consumer channel rather than as a tile-ready gate.
+The figure below zooms in on that mailbox handshake, which is why this one barrier pair should be read as a scalar producer-consumer channel rather than as a tile-ready gate.
 
 ![[GPU/modern-gpu-programming-for-mlsys/assets/images/flash_attention_softmax_correction.png]]
 
@@ -415,8 +418,7 @@ There is no single pipeline depth here, because different tile streams move at d
 - KV pipeline depth 3: K and V blocks stream through the inner loop while the same Q stages are reused.
 - TMEM pipeline depth 2: each Q stage has its own S/P/O TMEM slots, and those slots are reused after the matching barriers fire.
 
-The figure below switches from correctness gates to a timeline view, showing which roles can be
-active at roughly the same time once those separate rings are in flight.
+The figure below switches from correctness gates to a timeline view, showing which roles can be active at roughly the same time once those separate rings are in flight.
 
 ![[GPU/modern-gpu-programming-for-mlsys/assets/images/flash_attention_pipeline_v2.png]]
 

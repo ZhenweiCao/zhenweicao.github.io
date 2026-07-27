@@ -1,4 +1,10 @@
 ---
+title: "TIRx lowering pipeline"
+content_type: reference
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "TIRx lowering pipeline"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/tirx_guide/arch/lowering_pipeline.rst
@@ -13,22 +19,11 @@ tags:
 ---
 # TIRx lowering pipeline
 
-
-`tvm.compile(mod, target, tir_pipeline="tirx")` runs an authored TIRx module
-through the **tirx pipeline** — an ordered sequence of TIR passes that turns the
-high-level constructs you write (tile primitives, `TileLayout`-typed buffers,
-execution-scope ids) into split **host** + **device** functions, which the CUDA
-backend then renders to source. The pipeline is defined in
-`python/tvm/tirx/compilation_pipeline.py` (`tirx_pipeline`); this page walks the
-passes in order.
+`tvm.compile(mod, target, tir_pipeline="tirx")` runs an authored TIRx module through the **tirx pipeline** — an ordered sequence of TIR passes that turns the high-level constructs you write (tile primitives, `TileLayout`-typed buffers, execution-scope ids) into split **host** + **device** functions, which the CUDA backend then renders to source. The pipeline is defined in `python/tvm/tirx/compilation_pipeline.py` (`tirx_pipeline`); this page walks the passes in order.
 
 ## Where it sits
 
-
-`tvm.compile` first binds the target, runs the **tirx pipeline** (the module-level
-passes below), then applies **finalization** passes separately to the host and
-device functions, and finally hands each device function to the CUDA code
-generator:
+`tvm.compile` first binds the target, runs the **tirx pipeline** (the module-level passes below), then applies **finalization** passes separately to the host and device functions, and finally hands each device function to the CUDA code generator:
 
 ```text
 authored TIRx  ──BindTarget──▶  tirx_pipeline  ──▶  host func  ──host finalize──▶  C/LLVM
@@ -38,9 +33,7 @@ authored TIRx  ──BindTarget──▶  tirx_pipeline  ──▶  host func  �
 ```
 ## The passes
 
-
-The `tirx_pipeline` module pass applies this exact sequence (a few are gated by
-`PassContext` config):
+The `tirx_pipeline` module pass applies this exact sequence (a few are gated by `PassContext` config):
 
 | # | Pass | What it does |
 | --- | --- | --- |
@@ -65,13 +58,10 @@ The `tirx_pipeline` module pass applies this exact sequence (a few are gated by
 
 **Finalization** then runs per function kind:
 
-- **host**: `LowerTVMBuiltin` (lower `tvm_*` builtins), `LowerIntrin`
-  (target-specific intrinsics)
-- **device**: `LowerWarpMemory` (warp-scoped buffers → shuffles), `StmtSimplify`,
-  `LowerIntrin`
+- **host**: `LowerTVMBuiltin` (lower `tvm_*` builtins), `LowerIntrin` (target-specific intrinsics)
+- **device**: `LowerWarpMemory` (warp-scoped buffers → shuffles), `StmtSimplify`, `LowerIntrin`
 
 ## Inside LowerTIRx
-
 
 `LowerTIRx` is itself a small sequence (`src/tirx/transform/lower_tirx.cc`):
 
@@ -79,20 +69,12 @@ The `tirx_pipeline` module pass applies this exact sequence (a few are gated by
 LowerTIRx = Sequential([ TilePrimitiveDispatch, LowerTIRxCleanup ])
 
 ```
-- **`TilePrimitiveDispatch`** replaces every `TilePrimitiveCall` (`copy`,
-  `gemm`, `reduction`, …) with the body emitted by its selected backend
-  dispatch — its variant-selection and codegen.
-- **`LowerTIRxCleanup`** runs the `LayoutApplier`: it resolves every
-  `TileLayout`-typed buffer access into concrete physical address arithmetic
-  (`addr = data + elem_offset + layout.apply(coord)`), flattens the buffers, and
-  lowers the execution-scope ids (`T.cta_id` / `T.thread_id` / … →
-  `blockIdx` / `threadIdx` via `launch_thread`).
+- **`TilePrimitiveDispatch`** replaces every `TilePrimitiveCall` (`copy`, `gemm`, `reduction`, …) with the body emitted by its selected backend dispatch — its variant-selection and codegen.
+- **`LowerTIRxCleanup`** runs the `LayoutApplier`: it resolves every `TileLayout`-typed buffer access into concrete physical address arithmetic (`addr = data + elem_offset + layout.apply(coord)`), flattens the buffers, and lowers the execution-scope ids (`T.cta_id` / `T.thread_id` / … → `blockIdx` / `threadIdx` via `launch_thread`).
 
-So after `LowerTIRx` the module is plain TIR: no tile primitives, no
-`TileLayout` indirection, scope ids resolved to thread axes.
+So after `LowerTIRx` the module is plain TIR: no tile primitives, no `TileLayout` indirection, scope ids resolved to thread axes.
 
 ## A worked example
-
 
 Take a one-line scale kernel:
 
@@ -105,8 +87,7 @@ def scale(A_ptr: T.handle, B_ptr: T.handle):
     B[tx] = A[tx] * T.float32(2.0)
 
 ```
-**After `LowerTIRx`** the scope ids are real thread axes and the layout is applied
-(`A_1` / `B_1` are the flattened 1-D views):
+**After `LowerTIRx`** the scope ids are real thread axes and the layout is applied (`A_1` / `B_1` are the flattened 1-D views):
 
 ```python
 with T.launch_thread("blockIdx.x", 1) as blockIdx_x:
@@ -116,8 +97,7 @@ with T.launch_thread("blockIdx.x", 1) as blockIdx_x:
     B_1[threadIdx_x] = A_1[threadIdx_x] * T.float32(2.0)
 
 ```
-**After `SplitHostDevice` + `MakePackedAPI`** the one function has become two —
-a host launcher and a device kernel:
+**After `SplitHostDevice` + `MakePackedAPI`** the one function has become two — a host launcher and a device kernel:
 
 ```python
 @I.ir_module
@@ -127,14 +107,11 @@ class Module:
     def scale_kernel(...):  # device: the __global__ body, run on the GPU
 
 ```
-The CUDA backend then renders `scale_kernel` to the `__global__` function
-(`B_ptr[threadIdx.x] = A_ptr[threadIdx.x] * 2.0f`).
+The CUDA backend then renders `scale_kernel` to the `__global__` function (`B_ptr[threadIdx.x] = A_ptr[threadIdx.x] * 2.0f`).
 
 ## Reproduce it yourself
 
-
-You can run any prefix of the pipeline by hand to inspect a stage — this is how the
-IR snippets across these docs were produced:
+You can run any prefix of the pipeline by hand to inspect a stage — this is how the IR snippets across these docs were produced:
 
 ```python
 from tvm.tirx import transform as TT

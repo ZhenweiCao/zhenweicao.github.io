@@ -1,4 +1,10 @@
 ---
+title: "Data types and expressions"
+content_type: reference
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "Data types and expressions"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/tirx_guide/language_reference/cuda/data_types.rst
@@ -13,17 +19,11 @@ tags:
 ---
 # Data types and expressions
 
-
 Every TIRx expression carries a low-level **dtype** and a high-level **type**.
 
 ## Expression dtypes
 
-
-A `PrimExpr`'s `.dtype` is its scalar (or vector) element type — `float32`,
-`float16`, `bfloat16`, `int32`, `uint8`, `bool`, the low-precision
-`float8_e4m3fn` / `float4_e2m1fn` …, `handle` (a pointer), and vector forms
-such as `float32x4`. Each prints to the matching CUDA type. Allocating local and
-shared buffers across several dtypes, plus a vectorized `float32x4` load/store:
+A `PrimExpr`'s `.dtype` is its scalar (or vector) element type — `float32`, `float16`, `bfloat16`, `int32`, `uint8`, `bool`, the low-precision `float8_e4m3fn` / `float4_e2m1fn` …, `handle` (a pointer), and vector forms such as `float32x4`. Each prints to the matching CUDA type. Allocating local and shared buffers across several dtypes, plus a vectorized `float32x4` load/store:
 
 ```python
 @T.prim_func
@@ -45,7 +45,7 @@ def dtypes(A_ptr: T.handle, O_ptr: T.handle):
 ```
 lowers to (generated CUDA, elided):
 
-```c++
+```cpp
 half          f16_ptr[1];               // float16
 nv_bfloat16   bf16_ptr[1];              // bfloat16
 int           i32_ptr[1];               // int32
@@ -57,10 +57,7 @@ v_ptr[0]                  = *(float4*)(A_ptr + tx * 4);   // vectorized load
 *(float4*)(O_ptr + tx * 4) = v_ptr[0];                   // vectorized store
 
 ```
-A buffer's dtype can itself be a **vector type**: `T.alloc_local((1,), "float32x4")`
-declares a `float4` register directly (you index it as `v[0]`), and a
-`float32x4` `vload` / `vstore` then moves it as one 16-byte access. The vector
-dtype is not tied to `vload` — any buffer or scalar can carry it.
+A buffer's dtype can itself be a **vector type**: `T.alloc_local((1,), "float32x4")` declares a `float4` register directly (you index it as `v[0]`), and a `float32x4` `vload` / `vstore` then moves it as one 16-byte access. The vector dtype is not tied to `vload` — any buffer or scalar can carry it.
 
 so the dtype → CUDA mapping is:
 
@@ -72,25 +69,15 @@ so the dtype → CUDA mapping is:
 
 ## dtype vs type
 
-
-The `dtype` is *low-level* — it says "what bits". Separately, a value has a
-high-level **type**: `PrimType(dtype)` for a scalar, or
-`PointerType(PrimType(dtype), scope)` for a pointer. Most expressions are scalars
-(`PrimType`); the type system matters mainly for **pointers**.
+The `dtype` is *low-level* — it says "what bits". Separately, a value has a high-level **type**: `PrimType(dtype)` for a scalar, or `PointerType(PrimType(dtype), scope)` for a pointer. Most expressions are scalars (`PrimType`); the type system matters mainly for **pointers**.
 
 ## Pointers (`handle`)
 
-
-A buffer's `data` — its pointer — is a `Var` of pointer type, and it is
-**immutable** (a pointer is never reassigned). That shapes how you obtain one:
+A buffer's `data` — its pointer — is a `Var` of pointer type, and it is **immutable** (a pointer is never reassigned). That shapes how you obtain one:
 
 - `T.alloc_buffer(...)` allocates storage **and** defines its `data` pointer.
-- `T.decl_buffer(..., data=ptr)` declares a buffer over an existing pointer
-  `Var` `ptr`.
-- To back a buffer with a pointer **expression** — e.g. `T.ptx.map_shared_rank`
-  (PTX `mapa`) giving another cluster CTA's shared address — you must first bind
-  that expression to a pointer `Var` (`data` must be a `Var`, not an
-  expression), using a `T.let` of `PointerType`:
+- `T.decl_buffer(..., data=ptr)` declares a buffer over an existing pointer `Var` `ptr`.
+- To back a buffer with a pointer **expression** — e.g. `T.ptx.map_shared_rank` (PTX `mapa`) giving another cluster CTA's shared address — you must first bind that expression to a pointer `Var` (`data` must be a `Var`, not an expression), using a `T.let` of `PointerType`:
 
   ```python
   from tvm.ir.type import PointerType, PrimType

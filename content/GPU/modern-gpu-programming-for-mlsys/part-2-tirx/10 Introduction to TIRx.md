@@ -1,4 +1,10 @@
 ---
+title: "Introduction to TIRx"
+content_type: guide
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "Introduction to TIRx"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/chapter_intro_tirx/index.md
@@ -20,15 +26,13 @@ tags:
 
 > [!TIP] Running the examples
 >
-> These examples need a Blackwell GPU (`sm_100a`, such as a B200). The TIRx compiler ships as the
-> `tvm.tirx` module of the Apache TVM wheel; install it alongside a CUDA build of PyTorch:
+> These examples need a Blackwell GPU (`sm_100a`, such as a B200). The TIRx compiler ships as the `tvm.tirx` module of the Apache TVM wheel; install it alongside a CUDA build of PyTorch:
 >
 > ```bash
 > pip install apache-tvm
 > ```
 >
-> Confirm it imports with `python -c "import tvm, tvm.tirx; print(tvm.__version__)"`. The same setup
-> runs every runnable example in the book.
+> Confirm it imports with `python -c "import tvm, tvm.tirx; print(tvm.__version__)"`. The same setup runs every runnable example in the book.
 
 Part I explained what the hardware is. To make it compute anything, we need a way to program it.
 

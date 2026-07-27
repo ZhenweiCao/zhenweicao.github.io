@@ -23,7 +23,7 @@ export const DEFAULT_NAVIGATION: NavigationConfiguration = {
     {
       label: "知识库",
       directory: "GPU",
-      href: "/gpu/gpu-知识库索引",
+      href: "/gpu/",
     },
     {
       label: "Tutorial",

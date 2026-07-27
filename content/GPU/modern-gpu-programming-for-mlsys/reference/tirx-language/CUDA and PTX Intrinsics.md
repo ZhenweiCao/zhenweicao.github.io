@@ -1,4 +1,10 @@
 ---
+title: "CUDA C++/PTX intrinsics"
+content_type: reference
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "CUDA C++/PTX intrinsics"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/tirx_guide/language_reference/cuda/threads_sync.rst
@@ -13,16 +19,11 @@ tags:
 ---
 # CUDA C++/PTX intrinsics
 
-
-When no tile primitive covers what you need, two escape hatches reach the hardware
-directly: **call a backend intrinsic** (the `T.cuda.*` / `T.ptx.*` namespaces
-from `tvm.backend.cuda`), or **inline raw CUDA** source.
+When no tile primitive covers what you need, two escape hatches reach the hardware directly: **call a backend intrinsic** (the `T.cuda.*` / `T.ptx.*` namespaces from `tvm.backend.cuda`), or **inline raw CUDA** source.
 
 ## Calling backend intrinsics
 
-
-`T.cuda.*` and `T.ptx.*` expose the CUDA backend's device intrinsics directly —
-synchronization, mbarriers, reductions, and the PTX data-movement / MMA families:
+`T.cuda.*` and `T.ptx.*` expose the CUDA backend's device intrinsics directly — synchronization, mbarriers, reductions, and the PTX data-movement / MMA families:
 
 ```python
 T.cuda.cta_sync()                    # block barrier (__syncthreads)
@@ -54,47 +55,23 @@ def warp_reduce(A_ptr: T.handle):
 ```
 The shuffle lowers straight to `__shfl_xor_sync`:
 
-```c++
+```cpp
 v_ptr[0] = v_ptr[0] + __shfl_xor_sync(0xFFFFFFFF, v_ptr[0], i_ptr[0], 32);
 
 ```
-Other families under `T.ptx.*` / `T.cuda.*`: `cp_async` (LDGSTS),
-`cp_async.bulk.tensor` (TMA), `ldmatrix` / `stmatrix`, `tcgen05.*`
-(Blackwell MMA), `atomic_add`, `fence` … See the backend API reference for the
-full `tvm.backend.cuda` reference.
+Other families under `T.ptx.*` / `T.cuda.*`: `cp_async` (LDGSTS), `cp_async.bulk.tensor` (TMA), `ldmatrix` / `stmatrix`, `tcgen05.*` (Blackwell MMA), `atomic_add`, `fence` … See the backend API reference for the full `tvm.backend.cuda` reference.
 
 ## Synchronization semantics
 
+Four synchronization mechanisms come up constantly in the GEMM and Flash Attention kernels. Because they control asynchronous engines and parallel thread groups, misusing any of them usually leads to silent corruption or deadlock.
 
-Four synchronization mechanisms come up constantly in the GEMM and Flash Attention
-kernels. Because they control asynchronous engines and parallel thread groups,
-misusing any of them usually leads to silent corruption or deadlock.
+**Mbarrier Phases.** Mbarriers track arrivals using a single internal phase bit. The `T.ptx.mbarrier.try_wait(bar, phase)` intrinsic blocks until the barrier's internal phase *differs* from the `phase` argument provided by the caller. Consequently, when reusing a barrier across loop iterations, the caller must flip its local phase tracker (`phase ^= 1`) after every wait. Failing to do so causes subsequent waits to return immediately, allowing the engine to read half-written memory. [[GPU/modern-gpu-programming-for-mlsys/part-3-gemm/12 Building a Tiled GEMM|Building a Tiled GEMM]] walks through the full phase-tracking table.
 
-**Mbarrier Phases.** Mbarriers track arrivals using a single internal phase bit.
-The `T.ptx.mbarrier.try_wait(bar, phase)` intrinsic blocks until the barrier's
-internal phase *differs* from the `phase` argument provided by the caller.
-Consequently, when reusing a barrier across loop iterations, the caller must flip
-its local phase tracker (`phase ^= 1`) after every wait. Failing to do so causes
-subsequent waits to return immediately, allowing the engine to read half-written
-memory. [[GPU/modern-gpu-programming-for-mlsys/part-3-gemm/12 Building a Tiled GEMM|Building a Tiled GEMM]] walks through the full phase-tracking table.
+**Election.** `T.ptx.elect_sync()` elects a *single active lane within a warp*, not lane 0, and not one thread per CTA. To narrow an issuer down to exactly one thread, you must pair it with a warp-level guard. The pattern `if warp_id == 0:` followed by `if T.ptx.elect_sync():` is used to issue `Tx.gemm_async` and `tcgen05.commit` in [[GPU/modern-gpu-programming-for-mlsys/part-3-gemm/12 Building a Tiled GEMM|Building a Tiled GEMM]].
 
-**Election.** `T.ptx.elect_sync()` elects a *single active lane within a warp*,
-not lane 0, and not one thread per CTA. To narrow an issuer down to exactly one
-thread, you must pair it with a warp-level guard. The pattern `if warp_id == 0:`
-followed by `if T.ptx.elect_sync():` is used to issue `Tx.gemm_async` and
-`tcgen05.commit` in [[GPU/modern-gpu-programming-for-mlsys/part-3-gemm/12 Building a Tiled GEMM|Building a Tiled GEMM]].
+**Named Warpgroup Barriers.** `T.cuda.cta_sync()` maps to `__syncthreads()` and requires *every* CTA thread to arrive. Once warpgroups specialize onto different code paths, placing a `cta_sync()` inside a warpgroup branch deadlocks the kernel because the other warpgroups never reach it. The hardware provides 16 named barriers (IDs 0 to 15); `T.cuda.warpgroup_sync(10)` synchronizes only the threads of one warpgroup. Distinct warpgroups take distinct IDs (e.g., `warpgroup_sync(wg_id + 10)`) so they never collide on the same hardware barrier. See [[GPU/modern-gpu-programming-for-mlsys/part-3-gemm/14 Scaling GEMM with Warp Specialization and Clusters|Scaling GEMM with Warp Specialization and Clusters]].
 
-**Named Warpgroup Barriers.** `T.cuda.cta_sync()` maps to `__syncthreads()` and
-requires *every* CTA thread to arrive. Once warpgroups specialize onto different
-code paths, placing a `cta_sync()` inside a warpgroup branch deadlocks the kernel
-because the other warpgroups never reach it. The hardware provides 16 named
-barriers (IDs 0 to 15); `T.cuda.warpgroup_sync(10)` synchronizes only the threads
-of one warpgroup. Distinct warpgroups take distinct IDs (e.g.,
-`warpgroup_sync(wg_id + 10)`) so they never collide on the same hardware barrier.
-See [[GPU/modern-gpu-programming-for-mlsys/part-3-gemm/14 Scaling GEMM with Warp Specialization and Clusters|Scaling GEMM with Warp Specialization and Clusters]].
-
-**Fences.** Fences order a producer's writes before a consumer (often an
-asynchronous engine) reads them:
+**Fences.** Fences order a producer's writes before a consumer (often an asynchronous engine) reads them:
 
 | Fence | Orders |
 | --- | --- |
@@ -104,9 +81,7 @@ asynchronous engine) reads them:
 
 ## Inlining raw CUDA
 
-
-For something with no intrinsic at all, inject a `__device__` function from a
-source string with `T.cuda.func_call(name, *args, source_code=..., return_type=...)`:
+For something with no intrinsic at all, inject a `__device__` function from a source string with `T.cuda.func_call(name, *args, source_code=..., return_type=...)`:
 
 ```python
 SRC = r"""
@@ -123,7 +98,7 @@ def k(A_ptr: T.handle, B_ptr: T.handle):
 ```
 The source is emitted verbatim and the call is wired in:
 
-```c++
+```cpp
 __device__ __forceinline__ float my_relu(float x) { return x > 0.f ? x : 0.f; }
 // ...
 B_ptr[tx] = my_relu(A_ptr[tx]);

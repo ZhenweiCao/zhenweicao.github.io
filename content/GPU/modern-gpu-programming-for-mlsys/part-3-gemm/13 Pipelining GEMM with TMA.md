@@ -1,4 +1,10 @@
 ---
+title: "Pipelining GEMM with TMA"
+content_type: guide
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "Pipelining GEMM with TMA"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/chapter_gemm_async/index.md
@@ -71,10 +77,7 @@ This is exactly why `cta_sync()` is no longer sufficient. `cta_sync()` waits onl
 
 *TMA Async Load: Synchronization Flow*
 
-The figure above isolates the load-side handshake: one selected thread launches TMA, the mbarrier
-counts the expected bytes, and MMA waits on the release before reading SMEM. Where it says
-"Elected Thread" it means the selected thread that starts TMA, which in our code is the `tid == 0`
-thread, not an `elect_sync()` lane.
+The figure above isolates the load-side handshake: one selected thread launches TMA, the mbarrier counts the expected bytes, and MMA waits on the release before reading SMEM. Where it says "Elected Thread" it means the selected thread that starts TMA, which in our code is the `tid == 0` thread, not an `elect_sync()` lane.
 
 Putting the load path together, then: the selected thread issues both `copy_async` calls and follows them with `arrive.expect_tx(total_bytes)`, where the byte count is precisely how much data the mbarrier should hold out for. Once the engine has moved that many bytes, the matching `mbarrier.try_wait(phase)` releases, and only then is the SMEM tile safe to feed to MMA.
 

@@ -1,4 +1,10 @@
 ---
+title: "The Evolution of Tensor Core Data Layouts"
+content_type: guide
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "The Evolution of Tensor Core Data Layouts"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/chapter_layout_generations/index.md

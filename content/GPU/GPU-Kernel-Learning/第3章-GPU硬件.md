@@ -1,4 +1,9 @@
 ---
+title: "第3章：GPU 硬件原理"
+content_type: guide
+maturity: reviewed
+updated: 2026-07-27
+publish: true
 tags:
   - gpu-computing
   - gpu-programming
@@ -30,7 +35,7 @@ tags:
 
 ### 3.1.1 从程序员视角看 GPU
 
-```
+```text
 你写的代码:
 ┌─────────────────────────────────────┐
 │  Kernel<<<Grid of Blocks>>>         │
@@ -63,7 +68,7 @@ tags:
 
 ### 3.1.3 SM 内部结构
 
-```
+```text
 单个 SM 的结构（简化版）:
 ┌────────────────────────────────────────────────┐
 │                   SM                            │
@@ -111,7 +116,7 @@ tags:
 
 GPU 不是逐个线程执行的，而是以 Warp 为单位执行的。
 
-```
+```text
 一个 Block:
 ┌────────────────────────────────────────┐
 │ 256 个线程                              │
@@ -133,7 +138,7 @@ GPU 不是逐个线程执行的，而是以 Warp 为单位执行的。
 - **同时执行相同的指令**
 - 但处理不同的数据
 
-```
+```text
 Warp 执行过程:
 时钟周期 1: 所有 32 个线程执行 "加载 A[i]"
 时钟周期 2: 所有 32 个线程执行 "加载 B[i]"
@@ -159,7 +164,7 @@ __global__ void bad_branch(int* data, int n) {
 
 **发生了什么？**
 
-```
+```text
 Warp 0 (Thread 0-31):
                     
 时间片 1: 执行 if 分支
@@ -213,7 +218,7 @@ result = condition ? add_result : sub_result;
 
 ### 3.3.1 完整的内存层次
 
-```
+```text
 速度从快到慢:
 ┌─────────────────────────────────────────────┐
 │ 1. 寄存器 (Registers)                       │ ← 最快
@@ -275,7 +280,7 @@ __global__ void good_access(float* data) {
 
 **为什么合并访问快？**
 
-```
+```text
 GPU 内存控制器一次读取连续的 128 字节
 （32 个线程 × 4 字节/float）
 
@@ -305,7 +310,7 @@ GPU 内存控制器一次读取连续的 128 字节
 
 共享内存被分成 32 个 Bank（为了匹配 Warp 的 32 个线程），**每个 Bank 宽度固定为 4 字节**。"bank 宽度可配为 8 字节" 是 Kepler 时代的旧 API，Maxwell 起已弃用。
 
-```
+```text
 Bank 0   Bank 1   Bank 2   ...  Bank 31
   ↓        ↓        ↓             ↓
 [0]      [1]      [2]    ...   [31]
@@ -357,7 +362,7 @@ __shared__ float matrix[32][33];  // 多加一列
 
 ### 3.4.2 影响占用率的因素
 
-```
+```text
 每个 SM 的限制:
 1. 最大 Warp 数: 64 (A100)
 2. 最大线程数: 2048
@@ -398,7 +403,7 @@ float occupancy = (num_blocks * threads / 32) / (float)max_warps;
 
 Tensor Core 是专门做矩阵乘法的硬件单元。**不同代际的硬件原生 MMA 形状不同**：
 
-```
+```text
 普通 CUDA Core:
   1 次运算 = 1 个乘加
 

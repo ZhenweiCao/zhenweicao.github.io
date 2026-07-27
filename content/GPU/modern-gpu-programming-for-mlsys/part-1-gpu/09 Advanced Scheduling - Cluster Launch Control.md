@@ -1,4 +1,10 @@
 ---
+title: "Advanced Scheduling: Cluster Launch Control"
+content_type: guide
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "Advanced Scheduling: Cluster Launch Control"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/chapter_clc/index.md

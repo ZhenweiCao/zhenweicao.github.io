@@ -1,4 +1,9 @@
 ---
+title: "第6章：大模型推理 Kernel"
+content_type: guide
+maturity: reviewed
+updated: 2026-07-27
+publish: true
 tags:
   - gpu-computing
   - gpu-programming
@@ -411,7 +416,7 @@ Flash Attention 是大模型推理的核心优化技术，通过分块计算和�
 
 ### 6.4.1 Flash Attention 核心思想
 
-```
+```text
 传统 Attention: O(N²) 显存，需要存储完整的 attention matrix
 Flash Attention: O(N) 显存，分块计算，不存储中间结果
 

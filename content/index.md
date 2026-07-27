@@ -12,7 +12,7 @@ description: 面向 GPU 系统、CUDA Kernel 与性能工程的公开技术笔�
       <h1 id="home-title">把 GPU 系统知识连接成可复用的工程地图</h1>
       <p class="home-lead">记录 GPU 架构、CUDA 编程、Kernel 优化与性能分析。从硬件机制出发，沿着代码路径和证据链抵达工程判断。</p>
       <div class="home-actions">
-        <a class="home-button is-primary" href="/gpu/gpu-知识库索引">浏览知识库 <span aria-hidden="true">→</span></a>
+        <a class="home-button is-primary" href="/gpu/">浏览知识库 <span aria-hidden="true">→</span></a>
         <a class="home-button" href="/gpu/gpu-kernel-learning/readme">开始系统学习</a>
       </div>
     </div>
@@ -30,28 +30,28 @@ description: 面向 GPU 系统、CUDA Kernel 与性能工程的公开技术笔�
   <section class="home-section" aria-labelledby="topics-title">
     <div class="home-section-heading">
       <h2 id="topics-title">从核心专题进入</h2>
-      <p>沿着硬件、编程、优化、分析四条主线阅读；每个入口都连接到可持续维护的 canonical note。</p>
+      <p>从两套公开课程进入 GPU 编程、硬件机制、Kernel 优化与性能分析；所有入口都只指向已授权发布的文档。</p>
     </div>
     <div class="home-topic-grid">
-      <a class="home-topic-card" href="/gpu/hardware/gpu-硬件背景地图">
-        <span>01 · ARCHITECTURE</span>
-        <strong>GPU 硬件与架构</strong>
-        <small>理解 SM、warp、内存层级，以及 Ampere、Hopper、Blackwell 的执行路径演进。</small>
+      <a class="home-topic-card" href="/gpu/gpu-kernel-learning/readme">
+        <span>01 · FOUNDATION</span>
+        <strong>GPU Kernel 系统学习</strong>
+        <small>从基础概念、CUDA 入门和硬件原理开始，建立可运行、可调试的 Kernel 学习路线。</small>
       </a>
-      <a class="home-topic-card" href="/gpu/cuda/cuda-编程基础">
-        <span>02 · CUDA</span>
-        <strong>CUDA 编程基础</strong>
-        <small>从 grid、block、thread 到 shared memory，建立可运行、可调试的 Kernel 基础。</small>
+      <a class="home-topic-card" href="/gpu/modern-gpu-programming-for-mlsys/part-1-gpu/06-blackwell-tensor-core---tcgen05-mma">
+        <span>02 · ARCHITECTURE</span>
+        <strong>Blackwell Tensor Core</strong>
+        <small>理解 tcgen05.mma、TMEM 与 Blackwell Tensor Core 的现代执行路径。</small>
       </a>
-      <a class="home-topic-card" href="/gpu/cuda/cuda-gemm-矩阵乘法优化指南">
+      <a class="home-topic-card" href="/gpu/modern-gpu-programming-for-mlsys/part-3-gemm/12-building-a-tiled-gemm">
         <span>03 · KERNEL</span>
-        <strong>Kernel 与 GEMM 优化</strong>
-        <small>从 naive 实现走向 Tensor Core、TMA、TMEM 与现代流水线调度。</small>
+        <strong>Tiled GEMM 实现</strong>
+        <small>从数据布局和分块出发，逐步构建现代 GPU 上的高性能 GEMM。</small>
       </a>
-      <a class="home-topic-card" href="/gpu/profiling/cuda-kernel-性能瓶颈定位流程">
-        <span>04 · PROFILING</span>
-        <strong>性能分析与证据链</strong>
-        <small>用 Nsight Compute、trace 与实验对照定位瓶颈，并验证优化收益。</small>
+      <a class="home-topic-card" href="/gpu/modern-gpu-programming-for-mlsys/part-1-gpu/02-what-makes-a-kernel-fast">
+        <span>04 · PERFORMANCE</span>
+        <strong>Kernel 为什么快</strong>
+        <small>用带宽、计算吞吐、占用率和 Roofline 模型分析 Kernel 性能。</small>
       </a>
     </div>
   </section>
@@ -62,9 +62,9 @@ description: 面向 GPU 系统、CUDA Kernel 与性能工程的公开技术笔�
       <p>三篇覆盖学习地图、现代 Kernel 教程与完整性能分析闭环的代表性文档。</p>
     </div>
     <div class="home-reading-list">
-      <a class="home-reading-item" href="/gpu/gpu-知识库索引">
-        <time datetime="2026-06-14">2026.06.14</time>
-        <strong>GPU 知识库索引</strong>
+      <a class="home-reading-item" href="/gpu/gpu-kernel-learning/readme">
+        <time datetime="2026-07-27">2026.07.27</time>
+        <strong>GPU Kernel 系统学习课程</strong>
         <span aria-hidden="true">→</span>
       </a>
       <a class="home-reading-item" href="/gpu/modern-gpu-programming-for-mlsys/readme">

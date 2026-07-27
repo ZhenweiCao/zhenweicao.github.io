@@ -1,4 +1,10 @@
 ---
+title: "Building a Tiled GEMM"
+content_type: guide
+maturity: stable
+updated: 2026-07-21
+lang: en
+publish: true
 aliases:
   - "Building a Tiled GEMM"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/chapter_gemm_basics/index.md
@@ -51,11 +57,7 @@ Every optimization in this tutorial comes down to where the data lives and how i
 
 **Memory Data Flow**
 
-The figure above shows the baseline path that every later optimization edits but never replaces.
-Read it from left to right: operand tiles first move from GMEM to SMEM; `tcgen05.mma` then
-consumes the SMEM operands and writes accumulators to TMEM; and finally the epilogue reads TMEM
-back into registers before storing the result to GMEM. Keep this chain in mind, because every step
-below changes *how* one of these hops happens; it never changes the hops themselves.
+The figure above shows the baseline path that every later optimization edits but never replaces. Read it from left to right: operand tiles first move from GMEM to SMEM; `tcgen05.mma` then consumes the SMEM operands and writes accumulators to TMEM; and finally the epilogue reads TMEM back into registers before storing the result to GMEM. Keep this chain in mind, because every step below changes *how* one of these hops happens; it never changes the hops themselves.
 
 ## Optimization Path
 
