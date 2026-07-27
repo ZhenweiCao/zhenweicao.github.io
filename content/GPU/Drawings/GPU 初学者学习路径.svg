@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">GPU 初学者学习路径</title>
+  <desc id="desc">面向初学者的 GPU/CUDA 学习路线，从硬件心智模型、CUDA 基础、线程配置、shared memory、基础 kernel、GEMM、profiling 到 LLM kernel。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      text {
+        font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        fill: #0f172a;
+      }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .stage { font-size: 18px; font-weight: 700; }
+      .small { font-size: 13px; fill: #475569; }
+      .tiny { font-size: 11px; fill: #64748b; }
+      .box { fill: #ffffff; stroke: #334155; stroke-width: 1.5; rx: 10; }
+      .start { fill: #eef6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .core { fill: #ecfdf5; stroke: #059669; stroke-width: 2; rx: 12; }
+      .perf { fill: #fefce8; stroke: #ca8a04; stroke-width: 2; rx: 12; }
+      .advanced { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 2; rx: 12; }
+      .arrow { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #64748b; stroke-width: 1.5; stroke-dasharray: 6 5; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="760" fill="#f8fafc"/>
+  <text x="50" y="58" class="title">GPU/CUDA 初学者学习路径</text>
+  <text x="50" y="86" class="subtitle">原则：先建立硬件地图，再写最小 kernel；每一步都用 profiling 验证，不直接跳到 Tensor Core 或 Blackwell 指令。</text>
+
+  <rect x="70" y="135" width="230" height="110" class="start"/>
+  <text x="95" y="168" class="stage">0. 建立地图</text>
+  <text x="95" y="198" class="small">GPU / SM / warp / thread</text>
+  <text x="95" y="221" class="small">HBM / L2 / SMEM / register</text>
+
+  <rect x="380" y="135" width="230" height="110" class="core"/>
+  <text x="405" y="168" class="stage">1. 写第一个 Kernel</text>
+  <text x="405" y="198" class="small">kernel launch</text>
+  <text x="405" y="221" class="small">grid / block / thread index</text>
+
+  <rect x="690" y="135" width="230" height="110" class="core"/>
+  <text x="715" y="168" class="stage">2. 学线程配置</text>
+  <text x="715" y="198" class="small">block size / grid size</text>
+  <text x="715" y="221" class="small">occupancy 不是唯一目标</text>
+
+  <rect x="1000" y="135" width="230" height="110" class="core"/>
+  <text x="1025" y="168" class="stage">3. 学片上存储</text>
+  <text x="1025" y="198" class="small">shared memory tiling</text>
+  <text x="1025" y="221" class="small">bank conflict / coalescing</text>
+
+  <rect x="70" y="360" width="230" height="110" class="perf"/>
+  <text x="95" y="393" class="stage">4. 做基础 Kernel</text>
+  <text x="95" y="423" class="small">vector add / reduction</text>
+  <text x="95" y="446" class="small">naive matmul / tiled matmul</text>
+
+  <rect x="380" y="360" width="230" height="110" class="perf"/>
+  <text x="405" y="393" class="stage">5. 进入 GEMM</text>
+  <text x="405" y="423" class="small">CTA tile / warp tile</text>
+  <text x="405" y="446" class="small">Tensor Core / pipeline</text>
+
+  <rect x="690" y="360" width="230" height="110" class="perf"/>
+  <text x="715" y="393" class="stage">6. Profile 闭环</text>
+  <text x="715" y="423" class="small">Nsight Systems / Compute</text>
+  <text x="715" y="446" class="small">memory / compute / stall</text>
+
+  <rect x="1000" y="360" width="230" height="110" class="advanced"/>
+  <text x="1025" y="393" class="stage">7. LLM Kernel</text>
+  <text x="1025" y="423" class="small">softmax / RMSNorm</text>
+  <text x="1025" y="446" class="small">attention / MoE / quant</text>
+
+  <path d="M 300 190 L 380 190" class="arrow"/>
+  <path d="M 610 190 L 690 190" class="arrow"/>
+  <path d="M 920 190 L 1000 190" class="arrow"/>
+  <path d="M 1115 245 C 1115 305 185 300 185 360" class="arrow"/>
+  <path d="M 300 415 L 380 415" class="arrow"/>
+  <path d="M 610 415 L 690 415" class="arrow"/>
+  <path d="M 920 415 L 1000 415" class="arrow"/>
+  <path d="M 805 360 C 805 305 495 305 495 360" class="dash"/>
+  <text x="590" y="310" class="tiny">每学一个 kernel，都回到 profiling 验证</text>
+
+  <rect x="160" y="610" width="960" height="62" class="box"/>
+  <text x="190" y="638" class="small">不要跳读：看不懂 GEMM 时，通常是 CTA/warp/shared memory 还没稳；看不懂 Blackwell 时，通常是 TMA/WGMMA/scale/layout 还没稳。</text>
+  <text x="190" y="662" class="small">推荐入口：GPU 知识库索引 -> CUDA 编程基础 -> 线程配置 -> Shared Memory -> Kernel 示例 -> GEMM -> Nsight。</text>
+</svg>

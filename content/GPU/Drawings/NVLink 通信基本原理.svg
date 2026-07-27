@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 800" role="img" aria-labelledby="title desc">
+  <title id="title">NVLink 通信基本原理</title>
+  <desc id="desc">展示 GPU 间 NVLink 点对点通信、NVSwitch 全互联域及与 PCIe P2P 的对比。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arrow-bi-start" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 10 0 L 0 5 L 10 10 z" fill="#7c3aed"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .label { font-size: 17px; font-weight: 700; }
+      .body { font-size: 14px; fill: #475569; }
+      .small { font-size: 13px; fill: #64748b; }
+      .gpu { fill: #dbeafe; stroke: #2563eb; stroke-width: 2; rx: 8; }
+      .nvlink { fill: #ede9fe; stroke: #7c3aed; stroke-width: 2; rx: 8; }
+      .switch { fill: #ecfdf5; stroke: #059669; stroke-width: 2; rx: 8; }
+      .compare { fill: #fff7ed; stroke: #ea580c; stroke-width: 2; rx: 8; }
+      .note { fill: #fefce8; stroke: #ca8a04; stroke-width: 2; rx: 8; }
+      .flow { fill: #f8fafc; stroke: #334155; stroke-width: 1; rx: 8; }
+      .bi { stroke: #7c3aed; stroke-width: 2; fill: none; marker-end: url(#arrow); marker-start: url(#arrow-bi-start); }
+      .line { stroke: #7c3aed; stroke-width: 1.5; fill: none; }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="1240" height="800" fill="#f8fafc"/>
+  <text x="50" y="58" class="title">NVLink 通信基本原理</text>
+  <text x="50" y="86" class="subtitle">GPU 间点对点高速互联；经 NVSwitch 扩展为 NVLink domain；CUDA P2P 与 NCCL 拓扑探测自动选路</text>
+  <rect x="80" y="150" width="200" height="120" class="gpu"/>
+  <text x="130" y="185" class="label">GPU A</text>
+  <text x="110" y="215" class="body">HBM / L2</text>
+  <text x="100" y="240" class="small">NVLink 控制器</text>
+  <rect x="420" y="150" width="200" height="120" class="gpu"/>
+  <text x="470" y="185" class="label">GPU B</text>
+  <text x="450" y="215" class="body">HBM / L2</text>
+  <text x="440" y="240" class="small">NVLink 控制器</text>
+  <rect x="280" y="175" width="140" height="70" class="nvlink"/>
+  <text x="295" y="205" class="body" font-weight="700">NVLink 链路</text>
+  <text x="305" y="228" class="small">高带宽 P2P</text>
+  <path d="M 280 210 L 180 210" class="bi"/>
+  <path d="M 420 210 L 520 210" class="bi"/>
+  <text x="50" y="310" class="label">数据通路（P2P 拷贝）</text>
+  <rect x="50" y="330" width="1140" height="55" class="flow"/>
+  <text x="70" y="362" class="body">GPU A VRAM - NVLink 控制器 A - NVLink / NVSwitch - NVLink 控制器 B - GPU B VRAM</text>
+  <rect x="50" y="410" width="550" height="230" class="switch"/>
+  <text x="70" y="445" class="label">NVSwitch 全互联域（8 卡 / NVL72）</text>
+  <rect x="90" y="470" width="70" height="50" class="gpu" style="stroke-width:1"/>
+  <text x="108" y="500" class="body">G0</text>
+  <rect x="180" y="470" width="70" height="50" class="gpu" style="stroke-width:1"/>
+  <text x="198" y="500" class="body">G1</text>
+  <rect x="270" y="470" width="70" height="50" class="gpu" style="stroke-width:1"/>
+  <text x="288" y="500" class="body">G2</text>
+  <rect x="360" y="470" width="70" height="50" class="gpu" style="stroke-width:1"/>
+  <text x="378" y="500" class="body">G3</text>
+  <line x1="125" y1="520" x2="125" y2="540" class="line"/>
+  <line x1="215" y1="520" x2="215" y2="540" class="line"/>
+  <line x1="305" y1="520" x2="305" y2="540" class="line"/>
+  <line x1="395" y1="520" x2="395" y2="540" class="line"/>
+  <rect x="220" y="540" width="180" height="45" class="nvlink"/>
+  <text x="265" y="568" class="body" font-weight="700">NVSwitch</text>
+  <text x="70" y="620" class="body" fill="#047857">任意 GPU 对可经 switch 通信，形成统一 NVLink domain</text>
+  <rect x="640" y="410" width="550" height="230" class="compare"/>
+  <text x="660" y="445" class="label">NVLink vs PCIe P2P</text>
+  <text x="660" y="480" class="body" fill="#047857">NVLink：专用 GPU-GPU 链路，带宽高、延迟低</text>
+  <text x="660" y="510" class="body" fill="#b45309">PCIe P2P：经 root complex，多卡争用 PCIe 树</text>
+  <text x="660" y="545" class="body">NCCL 初始化探测拓扑：NVLink 优于 PCIe 优于 NET</text>
+  <text x="660" y="575" class="body">cudaDeviceCanAccessPeer 后 cudaMemcpyPeerAsync</text>
+  <text x="660" y="610" class="body">NVLink-C2C：Grace CPU 与 GPU（GB200 Superchip）</text>
+  <rect x="50" y="670" width="1140" height="100" class="note"/>
+  <text x="70" y="700" class="body" fill="#b91c1c">注意：Thread Block Cluster 的 DSMEM 是单 GPU 片内 SM 间通信，不走 NVLink。</text>
+  <text x="70" y="730" class="small">具体带宽数字见 NVIDIA GPU 架构与规格，不要把 NVL72 rack aggregate 带宽写成单卡规格。</text>
+</svg>

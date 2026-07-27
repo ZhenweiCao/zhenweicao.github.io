@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">CUDA PDL（Programmatic Dependent Launch）时序机制</title>
+  <desc id="desc">展示 Hopper 起 same-stream dependent kernel 提前启动机制：primary kernel 在尾段执行 griddepcontrol.launch_dependents（release）通知调度器；secondary kernel 在 preamble 执行 griddepcontrol.wait（acquire）等待该信号；secondary 的 launch 开销与 primary 收尾重叠，相比传统 stream serialization 可节省 launch latency。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <marker id="rel" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
+    </marker>
+    <style>
+      text {
+        font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        fill: #0f172a;
+      }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .label { font-size: 17px; font-weight: 700; }
+      .small { font-size: 13px; fill: #475569; }
+      .tiny { font-size: 11px; fill: #64748b; }
+      .lane-p { fill: #eef6ff; stroke: #2563eb; stroke-width: 1.8; rx: 10; }
+      .lane-s { fill: #ecfdf5; stroke: #059669; stroke-width: 1.8; rx: 10; }
+      .seg-p-main { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 6; }
+      .seg-p-tail { fill: #bfdbfe; stroke: #1d4ed8; stroke-width: 1.5; rx: 6; }
+      .seg-s-pre { fill: #d1fae5; stroke: #059669; stroke-width: 1.5; rx: 6; }
+      .seg-s-wait { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 1.5; stroke-dasharray: 4 3; rx: 6; }
+      .seg-s-main { fill: #a7f3d0; stroke: #047857; stroke-width: 1.5; rx: 6; }
+      .seg-launch { fill: #fde68a; stroke: #b45309; stroke-width: 1.5; rx: 6; }
+      .seg-exit { fill: #e2e8f0; stroke: #334155; stroke-width: 1.2; rx: 6; }
+      .axis { stroke: #94a3b8; stroke-width: 1.5; }
+      .relarrow { stroke: #7c3aed; stroke-width: 2; stroke-dasharray: 6 5; fill: none; marker-end: url(#rel); }
+      .arrow { stroke: #334155; stroke-width: 1.6; fill: none; marker-end: url(#arrow); }
+      .note { fill: #fefce8; stroke: #ca8a04; stroke-width: 1.6; rx: 10; }
+      .compare { fill: #fef2f2; stroke: #b91c1c; stroke-width: 1.4; stroke-dasharray: 5 4; rx: 8; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1280" height="720" fill="#f8fafc"/>
+
+  <text x="50" y="50" class="title">CUDA PDL（Programmatic Dependent Launch）时序机制</text>
+  <text x="50" y="78" class="subtitle">Hopper 起的 same-stream dependent kernel 提前启动；用 acquire/release 模型替代 stream serialization 串行等待</text>
+
+  <text x="50" y="120" class="label">时间轴 →</text>
+  <line x1="180" y1="115" x2="1230" y2="115" class="axis"/>
+
+  <text x="50" y="172" class="label">Primary Kernel</text>
+  <text x="50" y="192" class="small">蓝色 swimlane · 共享 stream</text>
+
+  <rect x="180" y="140" width="1050" height="80" class="lane-p"/>
+
+  <rect x="195" y="155" width="80" height="50" class="seg-launch"/>
+  <text x="220" y="178" text-anchor="middle" font-size="13" font-weight="700">launch</text>
+  <text x="235" y="195" text-anchor="middle" class="tiny">primary</text>
+
+  <rect x="280" y="155" width="380" height="50" class="seg-p-main"/>
+  <text x="470" y="178" text-anchor="middle" font-size="14" font-weight="700">主计算 (preamble + main work)</text>
+  <text x="470" y="195" text-anchor="middle" class="tiny">cudaLaunchAttributeProgrammaticStreamSerialization 已启用</text>
+
+  <rect x="665" y="155" width="225" height="50" class="seg-p-tail"/>
+  <text x="777" y="178" text-anchor="middle" font-size="13" font-weight="700">griddepcontrol.launch_dependents</text>
+  <text x="777" y="195" text-anchor="middle" class="tiny">release 信号（PTX）/ runtime 等价 API</text>
+
+  <rect x="895" y="155" width="240" height="50" class="seg-p-tail"/>
+  <text x="1015" y="178" text-anchor="middle" font-size="14" font-weight="700">收尾计算 (tail / epilogue)</text>
+  <text x="1015" y="195" text-anchor="middle" class="tiny">写 output、归约</text>
+
+  <rect x="1140" y="155" width="80" height="50" class="seg-exit"/>
+  <text x="1180" y="178" text-anchor="middle" font-size="13" font-weight="700">exit</text>
+
+  <text x="50" y="320" class="label">Secondary Kernel</text>
+  <text x="50" y="340" class="small">绿色 swimlane · 同一 stream</text>
+
+  <rect x="180" y="290" width="1050" height="80" class="lane-s"/>
+
+  <rect x="715" y="305" width="80" height="50" class="seg-launch"/>
+  <text x="755" y="328" text-anchor="middle" font-size="13" font-weight="700">launch</text>
+  <text x="755" y="345" text-anchor="middle" class="tiny">secondary 提前调度</text>
+
+  <rect x="800" y="305" width="160" height="50" class="seg-s-pre"/>
+  <text x="880" y="328" text-anchor="middle" font-size="14" font-weight="700">preamble</text>
+  <text x="880" y="345" text-anchor="middle" class="tiny">独立初始化（无依赖）</text>
+
+  <rect x="965" y="305" width="100" height="50" class="seg-s-wait"/>
+  <text x="1015" y="328" text-anchor="middle" font-size="13" font-weight="700">griddepcontrol</text>
+  <text x="1015" y="345" text-anchor="middle" font-size="13" font-weight="700">.wait</text>
+
+  <rect x="1070" y="305" width="150" height="50" class="seg-s-main"/>
+  <text x="1145" y="328" text-anchor="middle" font-size="14" font-weight="700">主计算（acquire 后）</text>
+  <text x="1145" y="345" text-anchor="middle" class="tiny">读 primary output</text>
+
+  <path d="M 777 205 C 777 240 1015 270 1015 305" class="relarrow"/>
+  <text x="900" y="252" class="tiny" fill="#7c3aed" font-weight="700">happens-before：release → acquire</text>
+  <text x="900" y="266" class="tiny">primary 的 launch_dependents 唤醒调度器，secondary 可在 wait 处继续</text>
+
+  <rect x="715" y="385" width="345" height="46" class="compare"/>
+  <text x="887" y="406" text-anchor="middle" font-size="13" font-weight="700" fill="#b91c1c">关键收益：launch + preamble 与 primary 收尾重叠</text>
+  <text x="887" y="424" text-anchor="middle" class="tiny">传统 stream serialization 中，secondary 须在 primary exit 之后才 launch</text>
+
+  <path d="M 755 355 L 755 385" class="arrow"/>
+  <path d="M 1180 205 L 1180 240 L 1060 240 L 1060 385" class="arrow"/>
+  <text x="1085" y="232" class="tiny">对比：传统 launch 起点</text>
+
+  <rect x="50" y="470" width="1180" height="220" class="note"/>
+  <text x="70" y="500" class="label">PDL 要点速查</text>
+
+  <text x="70" y="530" font-size="14" font-weight="700">硬件 / 工具链门槛</text>
+  <text x="70" y="552" class="small">· Compute Capability ≥ 9.0（Hopper H100/H200，Blackwell B200/B300 仍支持）</text>
+  <text x="70" y="572" class="small">· CUDA Toolkit ≥ 12.0；same-stream dependency 才生效</text>
+  <text x="70" y="592" class="small">· Primary 必须显式启用 PDL，secondary 必须有 wait 才能读 primary 输出</text>
+
+  <text x="70" y="624" font-size="14" font-weight="700">Runtime API（host 侧）</text>
+  <text x="70" y="646" class="small">· cudaLaunchAttribute attr; attr.id = cudaLaunchAttributeProgrammaticStreamSerialization;</text>
+  <text x="70" y="666" class="small">· attr.val.programmaticStreamSerializationAllowed = 1;  // 设在 primary 的 cudaLaunchConfig</text>
+
+  <text x="660" y="530" font-size="14" font-weight="700">Device 侧（PTX / 内置）</text>
+  <text x="660" y="552" class="small">· Primary 尾段：griddepcontrol.launch_dependents  ← release</text>
+  <text x="660" y="572" class="small">  CUDA 内置等价：cudaTriggerProgrammaticLaunchCompletion()</text>
+  <text x="660" y="592" class="small">· Secondary preamble：griddepcontrol.wait        ← acquire</text>
+  <text x="660" y="612" class="small">  CUDA 内置等价：cudaGridDependencySynchronize()</text>
+
+  <text x="660" y="644" font-size="14" font-weight="700">收益与适用场景</text>
+  <text x="660" y="666" class="small">· 节省 secondary kernel launch latency（μs 级），适合短小 dependent kernel 链</text>
+  <text x="660" y="684" class="small">· 典型：MoE dispatch/combine、attention 后接小 epilogue、tail allreduce</text>
+</svg>

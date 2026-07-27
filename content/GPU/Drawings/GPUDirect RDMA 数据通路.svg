@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 700" role="img" aria-labelledby="title desc">
+  <title id="title">GPUDirect RDMA 数据通路</title>
+  <desc id="desc">对比传统 host bounce 与 GPUDirect RDMA 零拷贝跨机 GPU 数据传输路径。</desc>
+  <defs>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b91c1c"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#047857"/>
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .label { font-size: 18px; font-weight: 700; }
+      .body { font-size: 13px; fill: #475569; }
+      .small { font-size: 12px; fill: #64748b; }
+      .gpu { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 6; }
+      .host { fill: #f1f5f9; stroke: #64748b; stroke-width: 1.5; rx: 6; }
+      .nic { fill: #d1fae5; stroke: #059669; stroke-width: 1.5; rx: 6; }
+      .peer { fill: #ede9fe; stroke: #7c3aed; stroke-width: 1.5; rx: 6; }
+      .trad-lane { fill: #fef2f2; stroke: #b91c1c; stroke-width: 2; stroke-dasharray: 6 4; rx: 8; }
+      .gdr-lane { fill: #ecfdf5; stroke: #047857; stroke-width: 2; rx: 8; }
+      .box { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 8; }
+      .use { fill: #eef6ff; stroke: #2563eb; stroke-width: 2; rx: 8; }
+      .a-red { stroke: #b91c1c; stroke-width: 2; fill: none; marker-end: url(#arrow-red); }
+      .a-green { stroke: #047857; stroke-width: 2.5; fill: none; marker-end: url(#arrow-green); }
+      .a-gray { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrow-gray); marker-start: url(#arrow-gray); }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="1240" height="700" fill="#f8fafc"/>
+  <text x="50" y="58" class="title">GPUDirect RDMA 数据通路</text>
+  <text x="50" y="86" class="subtitle">对比传统 host bounce 与 GDR 零拷贝路径；依赖 nvidia-peermem 将 GPU 显存注册为 RDMA Memory Region</text>
+  <text x="50" y="130" class="label" fill="#b91c1c">传统路径（无 GDR，多次拷贝）</text>
+  <rect x="50" y="150" width="1140" height="100" class="trad-lane"/>
+  <rect x="70" y="185" width="100" height="50" class="gpu"/>
+  <text x="88" y="215" class="body">GPU VRAM</text>
+  <path d="M 170 210 L 230 210" class="a-red"/>
+  <rect x="230" y="185" width="110" height="50" class="host"/>
+  <text x="245" y="205" class="small">Host Pinned</text>
+  <text x="255" y="222" class="small">Memory</text>
+  <path d="M 340 210 L 400 210" class="a-red"/>
+  <rect x="400" y="185" width="90" height="50" class="nic"/>
+  <text x="415" y="215" class="body">RDMA NIC</text>
+  <path d="M 490 210 L 610 210" class="a-gray"/>
+  <text x="520" y="195" class="small">RoCE/IB</text>
+  <rect x="610" y="185" width="90" height="50" class="nic"/>
+  <text x="625" y="215" class="body">RDMA NIC</text>
+  <path d="M 700 210 L 760 210" class="a-red"/>
+  <rect x="760" y="185" width="110" height="50" class="host"/>
+  <text x="775" y="205" class="small">Host Pinned</text>
+  <text x="785" y="222" class="small">Memory</text>
+  <path d="M 870 210 L 930 210" class="a-red"/>
+  <rect x="930" y="185" width="100" height="50" class="gpu"/>
+  <text x="948" y="215" class="body">GPU VRAM</text>
+  <text x="50" y="280" class="label" fill="#047857">GPUDirect RDMA 路径（零拷贝，推荐）</text>
+  <rect x="50" y="300" width="1140" height="120" class="gdr-lane"/>
+  <rect x="70" y="340" width="120" height="60" class="gpu" style="stroke-width:2"/>
+  <text x="88" y="365" class="body">GPU VRAM</text>
+  <text x="82" y="385" class="small">(MR 注册)</text>
+  <path d="M 190 370 L 210 370" class="a-green"/>
+  <rect x="210" y="350" width="130" height="40" class="peer"/>
+  <text x="230" y="375" class="small">nvidia-peermem</text>
+  <path d="M 340 370 L 390 370" class="a-green"/>
+  <rect x="390" y="340" width="100" height="60" class="nic" style="stroke-width:2;fill:#a7f3d0"/>
+  <text x="405" y="365" class="body">RDMA NIC</text>
+  <text x="408" y="385" class="small">DMA 直读</text>
+  <path d="M 490 370 L 640 370" class="a-green"/>
+  <text x="530" y="355" class="small" fill="#047857">RDMA Write/Read</text>
+  <rect x="640" y="340" width="100" height="60" class="nic" style="stroke-width:2;fill:#a7f3d0"/>
+  <text x="655" y="365" class="body">RDMA NIC</text>
+  <text x="658" y="385" class="small">DMA 直写</text>
+  <path d="M 740 370 L 790 370" class="a-green"/>
+  <rect x="790" y="350" width="130" height="40" class="peer"/>
+  <text x="810" y="375" class="small">nvidia-peermem</text>
+  <path d="M 920 370 L 940 370" class="a-green"/>
+  <rect x="940" y="340" width="120" height="60" class="gpu" style="stroke-width:2"/>
+  <text x="958" y="365" class="body">GPU VRAM</text>
+  <text x="952" y="385" class="small">(MR 注册)</text>
+  <text x="70" y="405" class="small" fill="#047857">CPU 仅参与建连与 MR 注册，数据面不经过 host staging</text>
+  <rect x="50" y="450" width="560" height="200" class="box"/>
+  <text x="70" y="485" class="label" style="font-size:17px">GDR 启用条件</text>
+  <text x="70" y="520" class="body">1. NVIDIA GPU driver + nvidia-peermem 内核模块</text>
+  <text x="70" y="545" class="body">2. RDMA 栈（OFED / rdma-core）+ ConnectX 网卡</text>
+  <text x="70" y="570" class="body">3. ibv_reg_mr 成功注册 GPU 地址为 RDMA MR</text>
+  <text x="70" y="595" class="body">4. 容器：/dev/infiniband/*、memlock=-1、IPC_LOCK</text>
+  <text x="70" y="620" class="body">5. RoCE GID：NCCL_IB_GID_INDEX / NVSHMEM_IB_GID_INDEX</text>
+  <rect x="640" y="450" width="550" height="200" class="use"/>
+  <text x="660" y="485" class="label" style="font-size:17px">典型应用场景</text>
+  <text x="660" y="520" class="body">NCCL 多节点 AllReduce / AllGather（NET 插件走 GDR）</text>
+  <text x="660" y="545" class="body">NVSHMEM / IBGDA：GPU 发起远端 put/get</text>
+  <text x="660" y="570" class="body">Mooncake / NIXL：PD 分离 KV cache 跨 worker 传输</text>
+  <text x="660" y="595" class="body">DeepEP：跨机 MoE token dispatch / combine</text>
+  <text x="660" y="620" class="body" fill="#b91c1c">失败表现：memory registration failed 导致退化 host bounce</text>
+</svg>

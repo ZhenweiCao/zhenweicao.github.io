@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 860" role="img" aria-labelledby="title desc">
+  <title id="title">GPUDirect RDMA peermem 与 DMA-BUF 工作流</title>
+  <desc id="desc">对比 legacy nvidia-peermem 与 Linux DMA-BUF 两种 GPUDirect RDMA kernel-mode 注册路径。</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#047857"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .title { font-size: 32px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .lane-a { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 8; }
+      .lane-b { fill: #ecfdf5; stroke: #059669; stroke-width: 2; rx: 8; }
+      .node { fill: #ffffff; stroke: #334155; stroke-width: 1.6; rx: 8; }
+      .gpu { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.6; rx: 8; }
+      .rdma { fill: #d1fae5; stroke: #059669; stroke-width: 1.6; rx: 8; }
+      .linux { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 1.6; rx: 8; }
+      .warn { fill: #fff7ed; stroke: #ea580c; stroke-width: 1.6; rx: 8; }
+      .label { font-size: 17px; font-weight: 700; }
+      .body { font-size: 13px; fill: #475569; }
+      .small { font-size: 12px; fill: #64748b; }
+      .arrow-blue { stroke: #2563eb; stroke-width: 2.4; fill: none; marker-end: url(#arrow-blue); }
+      .arrow-green { stroke: #047857; stroke-width: 2.4; fill: none; marker-end: url(#arrow-green); }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="1320" height="860" fill="#f8fafc"/>
+  <text x="52" y="60" class="title">GPUDirect RDMA：peermem 与 DMA-BUF 工作流</text>
+  <text x="52" y="90" class="subtitle">两条路径目标相同：让 RDMA 设备拿到 GPU memory 的可 DMA 映射；区别在 kernel-mode 接口归属</text>
+
+  <rect x="52" y="126" width="588" height="560" class="lane-a"/>
+  <text x="82" y="162" class="label" fill="#1d4ed8">A. legacy nvidia-peermem</text>
+  <text x="82" y="186" class="small">NVIDIA NV-P2P API + RDMA peer-memory client</text>
+
+  <rect x="130" y="224" width="430" height="58" class="node"/>
+  <text x="345" y="248" text-anchor="middle" class="label">User App / 通信库</text>
+  <text x="345" y="268" text-anchor="middle" class="small">cudaMalloc() 后 ibv_reg_mr(gpu_ptr)</text>
+  <path d="M 345 282 L 345 318" class="arrow-blue"/>
+
+  <rect x="130" y="318" width="430" height="58" class="rdma"/>
+  <text x="345" y="342" text-anchor="middle" class="label">RDMA core / mlx5_ib</text>
+  <text x="345" y="362" text-anchor="middle" class="small">识别 GPU pointer，调用 peer-memory client</text>
+  <path d="M 345 376 L 345 412" class="arrow-blue"/>
+
+  <rect x="130" y="412" width="430" height="58" class="gpu"/>
+  <text x="345" y="436" text-anchor="middle" class="label">nvidia-peermem</text>
+  <text x="345" y="456" text-anchor="middle" class="small">通过 nvidia_p2p_get_pages() pin GPU pages</text>
+  <path d="M 345 470 L 345 506" class="arrow-blue"/>
+
+  <rect x="130" y="506" width="430" height="58" class="gpu"/>
+  <text x="345" y="530" text-anchor="middle" class="label">NVIDIA GPU kernel driver</text>
+  <text x="345" y="550" text-anchor="middle" class="small">返回 page table / BAR / DMA mapping 信息</text>
+  <path d="M 345 564 L 345 600" class="arrow-blue"/>
+
+  <rect x="130" y="600" width="430" height="58" class="rdma"/>
+  <text x="345" y="624" text-anchor="middle" class="label">mlx5_ib program MTT / MKEY</text>
+  <text x="345" y="644" text-anchor="middle" class="small">NIC 之后可直接 DMA 读写 GPU memory</text>
+
+  <rect x="82" y="708" width="506" height="90" class="warn"/>
+  <text x="104" y="738" class="body">适合：老内核、既有 MLNX_OFED / DOCA-OFED 栈。</text>
+  <text x="104" y="762" class="body">注意：旧 nv_peer_mem 与 nvidia-peermem 不能同时加载。</text>
+  <text x="104" y="786" class="body">生命周期：依赖 invalidation callback，驱动侧要处理 revoke。</text>
+
+  <rect x="680" y="126" width="588" height="560" class="lane-b"/>
+  <text x="710" y="162" class="label" fill="#047857">B. DMA-BUF 推荐方向</text>
+  <text x="710" y="186" class="small">Linux upstream dma-buf exporter / importer 模型</text>
+
+  <rect x="758" y="224" width="430" height="58" class="node"/>
+  <text x="973" y="248" text-anchor="middle" class="label">User App / 通信库</text>
+  <text x="973" y="268" text-anchor="middle" class="small">分配 GPU memory，申请导出共享句柄</text>
+  <path d="M 973 282 L 973 318" class="arrow-green"/>
+
+  <rect x="758" y="318" width="430" height="58" class="gpu"/>
+  <text x="973" y="342" text-anchor="middle" class="label">NVIDIA GPU driver</text>
+  <text x="973" y="362" text-anchor="middle" class="small">作为 exporter 导出 dma-buf fd</text>
+  <path d="M 973 376 L 973 412" class="arrow-green"/>
+
+  <rect x="758" y="412" width="430" height="58" class="linux"/>
+  <text x="973" y="436" text-anchor="middle" class="label">Linux dma-buf framework</text>
+  <text x="973" y="456" text-anchor="middle" class="small">fd 传递、共享对象与同步语义</text>
+  <path d="M 973 470 L 973 506" class="arrow-green"/>
+
+  <rect x="758" y="506" width="430" height="58" class="rdma"/>
+  <text x="973" y="530" text-anchor="middle" class="label">RDMA driver importer</text>
+  <text x="973" y="550" text-anchor="middle" class="small">导入 fd，注册为 verbs Memory Region</text>
+  <path d="M 973 564 L 973 600" class="arrow-green"/>
+
+  <rect x="758" y="600" width="430" height="58" class="rdma"/>
+  <text x="973" y="624" text-anchor="middle" class="label">NIC 可访问 GPU-backed buffer</text>
+  <text x="973" y="644" text-anchor="middle" class="small">无需 nvidia-peermem 模块</text>
+
+  <rect x="710" y="708" width="506" height="90" class="warn"/>
+  <text x="732" y="738" class="body">适合：新系统，希望跟 Linux upstream 和 GPU Operator 对齐。</text>
+  <text x="732" y="762" class="body">前提：Open GPU Kernel Module、CUDA 11.7+、Linux 5.12+。</text>
+  <text x="732" y="786" class="body">验证：perftest 可使用 --use_cuda_dmabuf。</text>
+
+  <rect x="170" y="30" width="0" height="0" fill="none"/>
+</svg>

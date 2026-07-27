@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 680" role="img" aria-labelledby="title desc">
+  <title id="title">GPU 通信机制总览</title>
+  <desc id="desc">展示片内、同机多卡、跨机三层 GPU 通信层次及软件栈分层。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .label { font-size: 20px; font-weight: 700; }
+      .body { font-size: 14px; fill: #475569; }
+      .small { font-size: 13px; fill: #64748b; }
+      .warn { font-size: 13px; fill: #b91c1c; }
+      .intra { fill: #fefce8; stroke: #ca8a04; stroke-width: 2; rx: 8; }
+      .p2p { fill: #eef6ff; stroke: #2563eb; stroke-width: 2; rx: 8; }
+      .net { fill: #ecfdf5; stroke: #059669; stroke-width: 2; rx: 8; }
+      .stack { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 2; rx: 8; }
+      .arrow { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="1240" height="680" fill="#f8fafc"/>
+  <text x="50" y="58" class="title">GPU 通信机制总览</text>
+  <text x="50" y="86" class="subtitle">片内（单 GPU）到同机多卡（NVLink/PCIe P2P）到跨机（RDMA + GPUDirect）；带宽与延迟逐级变差</text>
+  <rect x="50" y="130" width="360" height="280" class="intra"/>
+  <text x="70" y="165" class="label">① 片内（单 GPU）</text>
+  <text x="70" y="195" class="body">· Thread / Warp / CTA</text>
+  <text x="70" y="220" class="body">· Shared Memory / Register</text>
+  <text x="70" y="245" class="body">· Cluster DSMEM（SM-to-SM fabric）</text>
+  <text x="70" y="270" class="body">· L2 与 HBM</text>
+  <text x="70" y="305" class="body" fill="#b45309">带宽：HBM 数 TB/s</text>
+  <text x="70" y="335" class="small">软件：CUDA kernel、TMA、mbarrier</text>
+  <text x="70" y="375" class="warn">注意：DSMEM 不走 NVLink</text>
+  <rect x="440" y="130" width="360" height="280" class="p2p"/>
+  <text x="460" y="165" class="label">② 同机多卡</text>
+  <text x="460" y="195" class="body">· NVLink（优先，高带宽低延迟）</text>
+  <text x="460" y="220" class="body">· PCIe P2P（无 NVLink 时退化）</text>
+  <text x="460" y="245" class="body">· NVSwitch 全互联域（8 卡 / NVL72）</text>
+  <text x="460" y="270" class="body">· NVLink-C2C：Grace 与 GPU</text>
+  <text x="460" y="305" class="body" fill="#1d4ed8">带宽：数百 GB/s 到 TB/s 级</text>
+  <text x="460" y="335" class="small">软件：cudaMemcpyPeer、NCCL、UVM P2P</text>
+  <text x="460" y="375" class="small">场景：TP 8 卡 AllReduce、同机 KV 拷贝</text>
+  <rect x="830" y="130" width="360" height="280" class="net"/>
+  <text x="850" y="165" class="label">③ 跨机（多节点）</text>
+  <text x="850" y="195" class="body">· InfiniBand / RoCE RDMA NIC</text>
+  <text x="850" y="220" class="body">· GPUDirect RDMA（GPU 与 NIC 零拷贝）</text>
+  <text x="850" y="245" class="body">· nvidia-peermem 注册 GPU MR</text>
+  <text x="850" y="270" class="body">· 多 rail：GPU-NIC 亲和绑定</text>
+  <text x="850" y="305" class="body" fill="#047857">带宽：100-400 Gb/s / NIC</text>
+  <text x="850" y="335" class="small">软件：NCCL NET、NVSHMEM、Mooncake</text>
+  <text x="850" y="375" class="small">场景：跨机 EP、PD KV transfer、多节点 TP</text>
+  <path d="M 410 270 L 440 270" class="arrow"/>
+  <path d="M 800 270 L 830 270" class="arrow"/>
+  <text x="395" y="255" class="small">更远</text>
+  <text x="785" y="255" class="small">更远</text>
+  <rect x="50" y="440" width="1140" height="200" class="stack"/>
+  <text x="70" y="475" class="label" style="font-size:17px">软件栈分层（跨层排障用）</text>
+  <text x="70" y="510" class="body">应用层：DeepEP MoE dispatch、Mooncake/NIXL KV transfer、自定义 collective</text>
+  <text x="70" y="535" class="body">中间件：NCCL（collective）、NVSHMEM/IBGDA（PGAS 远端 GPU 访存）</text>
+  <text x="70" y="560" class="body">CUDA Runtime：cudaMemcpyPeer、cudaIpc、P2P enable、UVM</text>
+  <text x="70" y="585" class="body">驱动/内核：nvidia-peermem、OFED/rdma-core、NCCL topology 探测</text>
+  <text x="70" y="610" class="body">硬件：NVLink / PCIe / RDMA NIC / NVSwitch</text>
+  <text x="620" y="510" class="body" font-weight="700" fill="#0f172a">优化原则</text>
+  <text x="620" y="535" class="body">1. 能片内就不多卡；能 NVLink 就不 PCIe；能 GDR 就不 host bounce</text>
+  <text x="620" y="560" class="body">2. 拓扑感知放置：同 NVLink domain / 同 RDMA ToR</text>
+  <text x="620" y="585" class="body">3. 通信与计算重叠：CUDA Graph、pipeline AR、SBO</text>
+  <text x="620" y="610" class="body">4. 环境：NCCL_IB_HCA、GID_INDEX、memlock、/dev/infiniband</text>
+</svg>

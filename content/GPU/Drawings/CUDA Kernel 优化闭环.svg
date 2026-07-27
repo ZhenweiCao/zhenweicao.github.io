@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 720" role="img" aria-labelledby="title desc">
+  <title id="title">CUDA Kernel 优化闭环</title>
+  <desc id="desc">展示 CUDA kernel 优化的迭代流程：先写 baseline，再测量，判断瓶颈，选择优化动作，验证正确性和性能。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <style>
+      text {
+        font-family: Arial, Helvetica, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        fill: #0f172a;
+      }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .label { font-size: 17px; font-weight: 700; }
+      .small { font-size: 13px; fill: #475569; }
+      .tiny { font-size: 11px; fill: #64748b; }
+      .box { fill: #ffffff; stroke: #334155; stroke-width: 1.4; rx: 10; }
+      .measure { fill: #eef6ff; stroke: #2563eb; stroke-width: 1.8; rx: 10; }
+      .memory { fill: #ecfdf5; stroke: #059669; stroke-width: 1.8; rx: 10; }
+      .compute { fill: #fefce8; stroke: #ca8a04; stroke-width: 1.8; rx: 10; }
+      .resource { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 1.8; rx: 10; }
+      .arrow { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .loop { stroke: #64748b; stroke-width: 1.8; stroke-dasharray: 6 5; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1180" height="720" fill="#f8fafc"/>
+  <text x="50" y="58" class="title">CUDA Kernel 优化闭环</text>
+  <text x="50" y="86" class="subtitle">优化不是背技巧，而是反复回答：慢在哪里？改了什么？正确吗？指标真的变好吗？</text>
+
+  <rect x="80" y="150" width="190" height="90" class="box"/>
+  <text x="110" y="184" class="label">1. Baseline</text>
+  <text x="110" y="213" class="small">先写正确版本</text>
+
+  <rect x="360" y="150" width="210" height="90" class="measure"/>
+  <text x="390" y="184" class="label">2. 测量</text>
+  <text x="390" y="213" class="small">nsys / ncu / benchmark</text>
+
+  <rect x="660" y="150" width="220" height="90" class="box"/>
+  <text x="690" y="184" class="label">3. 判瓶颈</text>
+  <text x="690" y="213" class="small">memory / compute / resource</text>
+
+  <rect x="145" y="350" width="230" height="115" class="memory"/>
+  <text x="175" y="384" class="label">Memory-bound</text>
+  <text x="175" y="414" class="small">coalescing / vectorized load</text>
+  <text x="175" y="438" class="small">SMEM tiling / cache reuse</text>
+
+  <rect x="475" y="350" width="230" height="115" class="compute"/>
+  <text x="505" y="384" class="label">Compute-bound</text>
+  <text x="505" y="414" class="small">Tensor Core / MMA tile</text>
+  <text x="505" y="438" class="small">unroll / instruction mix</text>
+
+  <rect x="805" y="350" width="230" height="115" class="resource"/>
+  <text x="835" y="384" class="label">Resource / Stall</text>
+  <text x="835" y="414" class="small">register / occupancy / SMEM</text>
+  <text x="835" y="438" class="small">barrier / bank conflict</text>
+
+  <rect x="360" y="555" width="210" height="90" class="box"/>
+  <text x="390" y="589" class="label">4. 验证</text>
+  <text x="390" y="618" class="small">正确性 + 性能对比</text>
+
+  <rect x="660" y="555" width="220" height="90" class="measure"/>
+  <text x="690" y="589" class="label">5. 记录</text>
+  <text x="690" y="618" class="small">shape / dtype / GPU / 指标</text>
+
+  <path d="M 270 195 L 360 195" class="arrow"/>
+  <path d="M 570 195 L 660 195" class="arrow"/>
+  <path d="M 770 240 C 770 300 260 295 260 350" class="arrow"/>
+  <path d="M 770 240 C 770 300 590 295 590 350" class="arrow"/>
+  <path d="M 770 240 C 770 300 920 295 920 350" class="arrow"/>
+  <path d="M 260 465 C 260 525 465 510 465 555" class="arrow"/>
+  <path d="M 590 465 L 500 555" class="arrow"/>
+  <path d="M 920 465 C 920 525 555 510 555 555" class="arrow"/>
+  <path d="M 570 600 L 660 600" class="arrow"/>
+  <path d="M 770 555 C 1020 420 1020 120 465 150" class="loop"/>
+
+  <text x="825" y="520" class="tiny">记录后回到测量，继续下一轮</text>
+</svg>
