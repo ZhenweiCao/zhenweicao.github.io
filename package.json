@@ -19,6 +19,8 @@
     "test": "tsx --test",
     "sync:obsidian-config": "tsx quartz/cli/syncObsidianConfig.ts",
     "publish:obsidian-assets": "tsx quartz/cli/publishObsidianAssets.ts",
+    "publish:obsidian-content": "tsx quartz/cli/publishObsidianContent.ts",
+    "watch:obsidian-publish": "tsx quartz/cli/watchObsidianPublish.ts",
     "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
     "install-plugins": "./quartz/bootstrap-cli.mjs plugin install --from-config --concurrency 1",
     "prebuild": "npm run install-plugins"
