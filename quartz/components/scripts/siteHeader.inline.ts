@@ -122,18 +122,21 @@ const bindSiteHeader = () => {
       menuButton.setAttribute("aria-label", isOpen ? "关闭知识导航" : "打开知识导航")
     }
 
-    const openOrCloseMenu = () => {
-      explorerButton.click()
-      requestAnimationFrame(syncState)
+    const setCollapsed = (collapsed: boolean) => {
+      explorer.classList.toggle("collapsed", collapsed)
+      explorer.setAttribute("aria-expanded", String(!collapsed))
+      document.documentElement.classList.toggle(
+        "mobile-no-scroll",
+        mobileViewport.matches && !collapsed,
+      )
+      syncState()
     }
 
-    const resetMenuForViewport = () => {
-      const shouldBeCollapsed = mobileViewport.matches
-      if (explorer.classList.contains("collapsed") !== shouldBeCollapsed) {
-        explorerButton.click()
-      }
-      requestAnimationFrame(syncState)
+    const openOrCloseMenu = () => {
+      setCollapsed(!explorer.classList.contains("collapsed"))
     }
+
+    const resetMenuForViewport = () => setCollapsed(mobileViewport.matches)
 
     const handleKeydown = (event: KeyboardEvent) => {
       if (
@@ -151,7 +154,7 @@ const bindSiteHeader = () => {
     menuButton.onclick = openOrCloseMenu
     mobileViewport.addEventListener("change", resetMenuForViewport)
     document.addEventListener("keydown", handleKeydown)
-    requestAnimationFrame(resetMenuForViewport)
+    resetMenuForViewport()
 
     cleanupCallbacks.push(() => {
       observer.disconnect()
