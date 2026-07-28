@@ -1028,7 +1028,10 @@ body[data-slug="tags/index"] .center > .popover-hint > article::before {
 // Collapsed and reader modes
 // ============================================================================
 
-:root[data-left-sidebar="closed"] .page[data-frame="default"] > #quartz-body {
+:root[data-left-sidebar="closed"]
+  body:not([data-slug="index"]):not([data-slug="featured"])
+  .page[data-frame="default"]
+  > #quartz-body {
   grid-template-columns: $collapsedRailWidth minmax(0, 1fr) $rightRailWidth;
 
   > .left.sidebar {
@@ -1703,7 +1706,10 @@ body[data-slug="featured"] {
     display: none;
   }
 
-  :root[data-left-sidebar="closed"] .page[data-frame="default"] > #quartz-body {
+  :root[data-left-sidebar="closed"]
+    body:not([data-slug="index"]):not([data-slug="featured"])
+    .page[data-frame="default"]
+    > #quartz-body {
     grid-template-columns: $collapsedRailWidth minmax(0, 1fr);
   }
 
