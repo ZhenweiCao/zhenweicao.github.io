@@ -6,8 +6,6 @@ updated: 2026-07-27
 publish: true
 tags:
   - gpu-computing
-  - gpu-programming
-  - concept-note
 ---
 # 第3章：GPU 硬件原理
 

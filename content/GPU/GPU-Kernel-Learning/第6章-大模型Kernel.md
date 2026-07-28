@@ -2,12 +2,12 @@
 title: "第6章：大模型推理 Kernel"
 content_type: guide
 maturity: reviewed
+created: 2026-05-17
 updated: 2026-07-27
 publish: true
+featured: true
 tags:
   - gpu-computing
-  - gpu-programming
-  - concept-note
 ---
 # 第6章：大模型推理 Kernel
 

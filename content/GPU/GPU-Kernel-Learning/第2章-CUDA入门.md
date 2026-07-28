@@ -6,7 +6,6 @@ updated: 2026-07-27
 publish: true
 tags:
   - gpu-computing
-  - gpu-programming
   - cuda-programming
 ---
 # 第2章：CUDA 入门

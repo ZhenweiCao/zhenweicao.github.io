@@ -2,9 +2,11 @@
 title: "Building a Tiled GEMM"
 content_type: guide
 maturity: stable
+created: 2026-07-21
 updated: 2026-07-21
 lang: en
 publish: true
+featured: true
 aliases:
   - "Building a Tiled GEMM"
 source: https://github.com/mlc-ai/modern-gpu-programming-for-mlsys/blob/8950d661e8499008546e3520c667c1cacec9af21/chapter_gemm_basics/index.md
@@ -13,8 +15,7 @@ imported: 2026-07-21
 tags:
   - gpu-computing
   - gpu-kernel
-  - tutorial-note
-  - blackwell
+  - blackwell-gpu
 ---
 # Building a Tiled GEMM
 

@@ -13,8 +13,6 @@ imported: 2026-07-21
 tags:
   - gpu-computing
   - gpu-kernel
-  - tutorial-note
-  - reference-note
 ---
 # Modern GPU Programming For MLSys
 

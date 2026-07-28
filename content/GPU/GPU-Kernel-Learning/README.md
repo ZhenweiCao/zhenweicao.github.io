@@ -9,9 +9,7 @@ aliases:
 updated: 2026-05-19
 tags:
   - gpu-computing
-  - gpu-programming
   - cuda-programming
-  - index-note
   - learning-roadmap
 ---
 # GPU Kernel 系统学习课程

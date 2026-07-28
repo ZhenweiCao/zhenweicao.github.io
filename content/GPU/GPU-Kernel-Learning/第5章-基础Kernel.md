@@ -6,8 +6,6 @@ updated: 2026-07-27
 publish: true
 tags:
   - gpu-computing
-  - gpu-programming
-  - concept-note
 ---
 # 第 5 章 - 基础 Kernel 实现
 

@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { createConfiguredAssetPublisher } from "../util/configuredAssetPublisher"
 import { loadRepositoryEnvironment } from "../util/localEnvironment"
+import { syncObsidianHomepage } from "../util/obsidianHomepageSync"
 import { syncPublishedObsidianContent } from "../util/obsidianPublishedContent"
 import {
   OBSIDIAN_SITE_CONFIGURATION_PATH,
@@ -85,11 +86,19 @@ async function main(): Promise<void> {
     publisher,
     vaultRoot: options.vaultRoot,
   })
+  const homepageResult = await syncObsidianHomepage({
+    check: options.check,
+    publisher: () => publisher,
+    repositoryRoot,
+    siteConfiguration,
+    vaultRoot: options.vaultRoot,
+  })
 
   console.log(
     `${options.check ? "Checked" : "Synchronized"} ${result.publishedFiles.length} ` +
       `publish:true note(s); ${result.assetCount} content-addressed asset(s); ` +
-      `${result.changedFiles.length} changed file(s); ${result.removedFiles.length} removed file(s).`,
+      `${result.changedFiles.length} changed file(s); ${result.removedFiles.length} removed file(s); ` +
+      `${homepageResult.featuredCount} recent featured article(s).`,
   )
 }
 

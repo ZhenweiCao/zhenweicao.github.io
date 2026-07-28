@@ -25,7 +25,7 @@ configuration:
       - label: 知识库
         directory: GPU
         href: /gpu/
-      - label: Tutorial
+      - label: 系列专题
         items:
           - label: GPU Kernel Learning
             directory: GPU/GPU-Kernel-Learning

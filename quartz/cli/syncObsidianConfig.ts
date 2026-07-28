@@ -1,10 +1,9 @@
 import { readFile, rename, unlink, writeFile } from "node:fs/promises"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
-import { createVaultAssetIndex, resolveVaultAsset } from "../util/cosAssetPublisher"
 import { createConfiguredAssetPublisher } from "../util/configuredAssetPublisher"
 import { loadRepositoryEnvironment } from "../util/localEnvironment"
-import { parseObsidianHomepage, renderHomepage } from "../util/obsidianHomepage"
+import { syncObsidianHomepage } from "../util/obsidianHomepageSync"
 import {
   OBSIDIAN_SITE_CONFIGURATION_PATH,
   parseObsidianSiteConfiguration,
@@ -97,34 +96,20 @@ async function main(): Promise<void> {
 
   const siteConfiguration = parseObsidianSiteConfiguration(websiteConfiguration)
   const siteResult = syncSiteConfigurationToQuartz(quartzConfig, siteConfiguration)
-  const homepageSourcePath = join(options.vaultRoot, siteConfiguration.homepage.source)
-  const homepage = parseObsidianHomepage(await readFile(homepageSourcePath, "utf8"))
-  let heroImageUrl: string | undefined
+  const homepageResult = await syncObsidianHomepage({
+    check: options.check,
+    publisher: () => createConfiguredAssetPublisher(siteConfiguration, options.uploadAssets),
+    repositoryRoot,
+    siteConfiguration,
+    vaultRoot: options.vaultRoot,
+  })
 
-  if (homepage.hero.image !== undefined) {
-    const assets = siteConfiguration.assets
-    if (assets === undefined) {
-      throw new Error("website.assets is required when the homepage uses a local image")
-    }
-    const publisher = createConfiguredAssetPublisher(siteConfiguration, options.uploadAssets)
-    const index = await createVaultAssetIndex(options.vaultRoot)
-    const imagePath = resolveVaultAsset(
-      index,
-      siteConfiguration.homepage.source,
-      homepage.hero.image,
-    )
-    if (imagePath === undefined) {
-      throw new Error(`Homepage image is not a supported local asset: ${homepage.hero.image}`)
-    }
-    heroImageUrl = (await publisher.publish(imagePath)).url
-  }
-
-  const homepageOutput = renderHomepage(homepage, heroImageUrl)
-  const homepageTargetPath = join(repositoryRoot, "content", "index.md")
-  const currentHomepage = await readFile(homepageTargetPath, "utf8")
-  const homepageChanged = currentHomepage !== homepageOutput
-
-  if (!siteResult.changed && !homepageChanged) {
+  if (
+    !siteResult.changed &&
+    !homepageResult.sourceChanged &&
+    !homepageResult.homepageChanged &&
+    !homepageResult.archiveChanged
+  ) {
     console.log("Website configuration is in sync with Obsidian.")
     return
   }
@@ -136,8 +121,10 @@ async function main(): Promise<void> {
   }
 
   if (siteResult.changed) await atomicWrite(quartzConfigPath, siteResult.output)
-  if (homepageChanged) await atomicWrite(homepageTargetPath, homepageOutput)
-  console.log(`Synced website configuration and homepage from ${options.vaultRoot}`)
+  console.log(
+    `Synced website configuration and homepage from ${options.vaultRoot}; ` +
+      `${homepageResult.featuredCount} recent featured article(s).`,
+  )
 }
 
 loadRepositoryEnvironment(repositoryRoot)
